@@ -1,0 +1,51 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Personal Details</h1>
+      <p class="subtitle">Manage applicant profiles</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="addApplicant()">+ Add Personal Details</button>
+  </div>
+
+  <div class="grid-card">
+    <table class="data-grid">
+      <thead>
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Email</th>
+          <th>Phone Number</th>
+          <th>Nationality</th>
+          <th>DOB</th>
+          <th class="action-col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (applicants().length === 0) {
+          <tr><td colspan="7" class="empty-row">No applicant profiles yet. Click "+ Add Personal Details" to create one.</td></tr>
+        }
+        @for (applicant of applicants(); track applicant.id) {
+          <tr>
+            <td>{{ applicant.firstName }}</td>
+            <td>{{ applicant.lastName }}</td>
+            <td>{{ applicant.email }}</td>
+            <td>{{ applicant.phoneNumber }}</td>
+            <td>{{ applicant.nationality }}</td>
+            <td>{{ applicant.dob | date: 'MM/dd/yyyy' }}</td>
+            <td class="action-col">
+              <div class="menu-wrapper">
+                <button type="button" class="dots-btn" (click)="toggleMenu(applicant.id)">&#8942;</button>
+                @if (openMenuId() === applicant.id) {
+                  <div class="dropdown-menu">
+                    <button type="button" (click)="editApplicant(applicant)">Edit</button>
+                    <button type="button" class="danger" (click)="deleteApplicant(applicant)">Delete</button>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

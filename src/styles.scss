@@ -1,0 +1,368 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #f5f7fb;
+  color: #1e2a3a;
+}
+
+h1, h2, h3, h4 {
+  font-family: inherit;
+}
+
+/* ---------- Shared page/grid classes, reused by every module ---------- */
+
+.page {
+  max-width: 1200px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+
+  h1 {
+    margin: 0 0 2px;
+    font-size: 22px;
+    color: #1a2b4a;
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #718096;
+  }
+}
+
+.grid-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: visible;
+}
+
+.data-grid {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #718096;
+    background: #f8fafc;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e9f0;
+  }
+
+  tbody td {
+    padding: 13px 16px;
+    font-size: 13.5px;
+    color: #334155;
+    border-bottom: 1px solid #eef1f6;
+  }
+
+  tbody tr:hover {
+    background: #fafbfd;
+  }
+
+  .empty-row {
+    text-align: center;
+    color: #94a3b8;
+    padding: 30px 16px;
+  }
+
+  .action-col {
+    width: 70px;
+    text-align: center;
+  }
+}
+
+.menu-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.dots-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+
+  &:hover { background: #eef1f6; }
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  overflow: hidden;
+  min-width: 110px;
+
+  button {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+
+    &:hover { background: #f5f7fb; }
+
+    &.danger {
+      color: #d64545;
+    }
+  }
+}
+
+/* ---------- Shared buttons ---------- */
+
+.btn-primary {
+  background: #2b4a7a;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13.5px;
+
+  &:hover { background: #1a2b4a; }
+  &:disabled { background: #a9b8d4; cursor: not-allowed; }
+}
+
+.btn-secondary {
+  background: #eef1f6;
+  color: #2b4a7a;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13.5px;
+
+  &:hover { background: #dde3ee; }
+}
+
+.btn-outline {
+  background: #fff;
+  color: #2b4a7a;
+  border: 1px solid #2b4a7a;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+
+  &:hover { background: #eef3fc; }
+}
+
+/* ---------- Shared form classes ---------- */
+
+.form-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 26px 28px;
+}
+
+.form-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.form-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2b4a7a;
+  margin: 22px 0 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eef1f6;
+
+  &:first-child { margin-top: 0; }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+
+  label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+  }
+
+  .req { color: #d64545; }
+
+  input, select, textarea {
+    padding: 9px 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: #2b4a7a;
+    }
+
+    &.invalid {
+      border-color: #d64545;
+      background: #fff5f5;
+    }
+
+    &:disabled {
+      background: #f1f4f8;
+      color: #94a3b8;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  .field-error {
+    color: #d64545;
+    font-size: 11.5px;
+    margin-top: 4px;
+  }
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+
+  label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #334155;
+  }
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #cbd5e1;
+    border-radius: 22px;
+    transition: 0.2s;
+
+    &::before {
+      content: '';
+      position: absolute;
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+  }
+
+  input:checked + .slider {
+    background: #2b4a7a;
+  }
+
+  input:checked + .slider::before {
+    transform: translateX(20px);
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid #eef1f6;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+  font-size: 12.5px;
+  color: #334155;
+
+  input {
+    margin-top: 2px;
+  }
+}
+
+.file-upload-box {
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  font-size: 12.5px;
+  color: #64748b;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #2b4a7a;
+    background: #f8fafc;
+  }
+
+  input[type='file'] {
+    display: none;
+  }
+}
+
+.placeholder-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 55vh;
+  text-align: center;
+  color: #94a3b8;
+
+  .icon { font-size: 46px; margin-bottom: 14px; }
+  h2 { color: #334155; margin: 0 0 8px; font-size: 18px; }
+  p { max-width: 420px; font-size: 13px; line-height: 1.6; }
+}

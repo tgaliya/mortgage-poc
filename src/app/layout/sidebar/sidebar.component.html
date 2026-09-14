@@ -1,0 +1,54 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <span class="logo-icon">&#9670;</span>
+    <span class="logo-text">Outamation</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    @for (module of modules; track module.label) {
+      <div class="nav-module">
+        @if (module.path) {
+          <a
+            class="nav-item"
+            [class.active]="isActiveModule(module)"
+            [routerLink]="module.path">
+            <span class="nav-icon">{{ module.icon }}</span>
+            <span class="nav-label">{{ module.label }}</span>
+          </a>
+        } @else {
+          <button
+            type="button"
+            class="nav-item nav-item-expandable"
+            [class.active]="isActiveModule(module)"
+            (click)="toggleModule(module)">
+            <span class="nav-icon">{{ module.icon }}</span>
+            <span class="nav-label">{{ module.label }}</span>
+            <span class="chevron" [class.rotated]="isExpanded(module)">&#9660;</span>
+          </button>
+
+          @if (isExpanded(module)) {
+            <div class="sub-modules">
+              <button type="button" class="collapse-btn" (click)="collapse()">
+                &#9650; Collapse
+              </button>
+              @for (sub of module.subModules; track sub.path) {
+                <a
+                  class="sub-nav-item"
+                  [class.active]="isActiveSubModule(sub.path)"
+                  [routerLink]="sub.path">
+                  {{ sub.label }}
+                </a>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  </nav>
+
+  <div class="sidebar-footer">
+    <button type="button" class="logout-btn" (click)="logout()">
+      <span>&#10148;</span> Logout
+    </button>
+  </div>
+</aside>

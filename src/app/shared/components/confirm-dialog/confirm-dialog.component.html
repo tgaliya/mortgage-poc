@@ -1,0 +1,12 @@
+@if (dialogService.state().visible) {
+  <div class="overlay">
+    <div class="dialog">
+      <h3>{{ dialogService.state().title }}</h3>
+      <p>{{ dialogService.state().message }}</p>
+      <div class="actions">
+        <button class="btn-secondary" (click)="onNo()">{{ dialogService.state().noLabel }}</button>
+        <button class="btn-primary" (click)="onYes()">{{ dialogService.state().yesLabel }}</button>
+      </div>
+    </div>
+  </div>
+}

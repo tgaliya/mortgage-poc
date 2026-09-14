@@ -1,0 +1,64 @@
+<div class="dashboard">
+  <h1>Dashboard</h1>
+  <p class="subtitle">Overview of application activity (dummy POC data)</p>
+
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-icon">&#128101;</div>
+      <div>
+        <div class="stat-value">{{ borrowerCount() }}</div>
+        <div class="stat-label">Borrowers</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#127968;</div>
+      <div>
+        <div class="stat-value">{{ propertyCount }}</div>
+        <div class="stat-label">Properties</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#128179;</div>
+      <div>
+        <div class="stat-value">{{ loanCount }}</div>
+        <div class="stat-label">Loans</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#128196;</div>
+      <div>
+        <div class="stat-value">{{ documentCount }}</div>
+        <div class="stat-label">Documents</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Monthly Applications</h3>
+      <div class="bar-chart">
+        @for (bar of barChartData; track bar.label) {
+          <div class="bar-col">
+            <div class="bar" [style.height.%]="(bar.value / maxBarValue) * 100"></div>
+            <span class="bar-label">{{ bar.label }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Borrower Status Split</h3>
+      <div class="donut-wrapper">
+        <div class="donut" [style.background]="donutGradient"></div>
+        <div class="donut-legend">
+          @for (seg of donutSegments; track seg.label) {
+            <div class="legend-item">
+              <span class="dot" [style.background]="seg.color"></span>
+              {{ seg.label }} - {{ seg.value }}%
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

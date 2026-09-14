@@ -1,0 +1,53 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Property Details</h1>
+      <p class="subtitle">Manage property records</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="addProperty()">+ Add Property Details</button>
+  </div>
+
+  <div class="grid-card">
+    <table class="data-grid">
+      <thead>
+        <tr>
+          <th>Property Name</th>
+          <th>Street Address</th>
+          <th>City</th>
+          <th>State</th>
+          <th>County</th>
+          <th>Zip Code</th>
+          <th>Property Status</th>
+          <th class="action-col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (properties().length === 0) {
+          <tr><td colspan="8" class="empty-row">No property records yet. Click "+ Add Property Details" to create one.</td></tr>
+        }
+        @for (property of properties(); track property.id) {
+          <tr>
+            <td>{{ property.propertyName }}</td>
+            <td>{{ property.streetAddress }}</td>
+            <td>{{ property.city }}</td>
+            <td>{{ property.state }}</td>
+            <td>{{ property.county }}</td>
+            <td>{{ property.zipCode }}</td>
+            <td>{{ property.propertyStatus }}</td>
+            <td class="action-col">
+              <div class="menu-wrapper">
+                <button type="button" class="dots-btn" (click)="toggleMenu(property.id)">&#8942;</button>
+                @if (openMenuId() === property.id) {
+                  <div class="dropdown-menu">
+                    <button type="button" (click)="editProperty(property)">Edit</button>
+                    <button type="button" class="danger" (click)="deleteProperty(property)">Delete</button>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

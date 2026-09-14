@@ -1,0 +1,91 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEditMode() ? 'Edit Document' : 'Add Document' }}</h1>
+      <p class="subtitle">Fields marked with * are required</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    @if (!isEditMode()) {
+      <div class="form-toolbar">
+        <button type="button" class="btn-outline" (click)="clearForm()">Clear</button>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Document Name <span class="req">*</span></label>
+          <input type="text" formControlName="documentName" [class.invalid]="f.documentName.invalid && f.documentName.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Document Type <span class="req">*</span></label>
+          <select formControlName="documentType" [class.invalid]="f.documentType.invalid && f.documentType.touched">
+            <option value="" disabled selected>Select</option>
+            @for (type of documentTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Document Sub Type <span class="req">*</span></label>
+          <select formControlName="documentSubType" [class.invalid]="f.documentSubType.invalid && f.documentSubType.touched" [disabled]="subTypeOptions().length === 0">
+            <option value="" disabled selected>{{ subTypeOptions().length === 0 ? 'Select Document Type first' : 'Select' }}</option>
+            @for (sub of subTypeOptions(); track sub) {
+              <option [value]="sub">{{ sub }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Document #</label>
+          <input type="text" formControlName="documentNumber" />
+        </div>
+
+        <div class="form-field">
+          <label>Document Date</label>
+          <input type="date" formControlName="documentDate" />
+        </div>
+
+        <div class="form-field">
+          <label>Document Status <span class="req">*</span></label>
+          <select formControlName="documentStatus" [class.invalid]="f.documentStatus.invalid && f.documentStatus.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Pending Review">Pending Review</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Resubmission Required">Resubmission Required</option>
+          </select>
+        </div>
+
+        <div class="form-field full-width">
+          <label>Document Description</label>
+          <textarea formControlName="documentDescription"></textarea>
+        </div>
+
+        <div class="form-field full-width">
+          <label>File Upload <span class="req">*</span></label>
+          <label class="file-upload-box">
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onFileSelected($event)" />
+            &#128206;
+            @if (selectedFile()) {
+              {{ selectedFile()!.name }}
+            } @else if (existingFileName()) {
+              {{ existingFileName() }} (click to replace)
+            } @else {
+              Click to upload - .pdf, .jpg, .jpeg, .png only, max 5 MB
+            }
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>

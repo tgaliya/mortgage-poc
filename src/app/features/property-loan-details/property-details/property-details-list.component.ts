@@ -1,0 +1,47 @@
+import { Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { PropertyService } from '../../../core/services/property.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { Property } from '../../../core/models/property.model';
+
+@Component({
+  selector: 'app-property-details-list',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './property-details-list.component.html'
+})
+export class PropertyDetailsListComponent {
+  private propertyService = inject(PropertyService);
+  private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
+  private router = inject(Router);
+
+  properties = this.propertyService.properties;
+  openMenuId = signal<string | null>(null);
+
+  toggleMenu(id: string): void {
+    this.openMenuId.set(this.openMenuId() === id ? null : id);
+  }
+
+  addProperty(): void {
+    this.router.navigate(['/property-loan-details/property-details/add']);
+  }
+
+  editProperty(property: Property): void {
+    this.openMenuId.set(null);
+    this.router.navigate(['/property-loan-details/property-details/edit', property.id]);
+  }
+
+  async deleteProperty(property: Property): Promise<void> {
+    this.openMenuId.set(null);
+    const confirmed = await this.confirmDialog.confirm(
+      'Are you sure you want to proceed with deletion? You cannot rollback this operation.'
+    );
+    if (confirmed) {
+      await this.propertyService.delete(property.id);
+      this.toast.success('Property Details deleted!');
+    }
+  }
+}

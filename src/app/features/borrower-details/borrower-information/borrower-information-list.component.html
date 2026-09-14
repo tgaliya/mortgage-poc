@@ -1,0 +1,51 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Borrower Information</h1>
+      <p class="subtitle">Manage borrower records</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="addBorrower()">+ Add Borrower Info</button>
+  </div>
+
+  <div class="grid-card">
+    <table class="data-grid">
+      <thead>
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Email</th>
+          <th>Phone Number</th>
+          <th>DOB</th>
+          <th class="action-col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (borrowers().length === 0) {
+          <tr>
+            <td colspan="6" class="empty-row">No borrower records yet. Click "+ Add Borrower Info" to create one.</td>
+          </tr>
+        }
+        @for (borrower of borrowers(); track borrower.id) {
+          <tr>
+            <td>{{ borrower.firstName }}</td>
+            <td>{{ borrower.lastName }}</td>
+            <td>{{ borrower.email }}</td>
+            <td>{{ borrower.phoneNumber }}</td>
+            <td>{{ borrower.dob | date: 'MM/dd/yyyy' }}</td>
+            <td class="action-col">
+              <div class="menu-wrapper">
+                <button type="button" class="dots-btn" (click)="toggleMenu(borrower.id)">&#8942;</button>
+                @if (openMenuId() === borrower.id) {
+                  <div class="dropdown-menu">
+                    <button type="button" (click)="editBorrower(borrower)">Edit</button>
+                    <button type="button" class="danger" (click)="deleteBorrower(borrower)">Delete</button>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,354 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEditMode() ? 'Edit Applicant Profile' : 'Add Personal Details' }}</h1>
+      <p class="subtitle">Fields marked with * are required</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    @if (!isEditMode()) {
+      <div class="form-toolbar">
+        <button type="button" class="btn-outline" (click)="clearForm()">Clear</button>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <div class="form-section-title">1. Basic Information</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>First Name <span class="req">*</span></label>
+          <input type="text" formControlName="firstName" [class.invalid]="f.firstName.invalid && f.firstName.touched" />
+        </div>
+        <div class="form-field">
+          <label>Middle Name</label>
+          <input type="text" formControlName="middleName" />
+        </div>
+        <div class="form-field">
+          <label>Last Name <span class="req">*</span></label>
+          <input type="text" formControlName="lastName" [class.invalid]="f.lastName.invalid && f.lastName.touched" />
+        </div>
+        <div class="form-field">
+          <label>Gender <span class="req">*</span></label>
+          <select formControlName="gender" [class.invalid]="f.gender.invalid && f.gender.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        @if (showGenderSpecify) {
+          <div class="form-field">
+            <label>Please Specify <span class="req">*</span></label>
+            <input type="text" formControlName="genderSpecify" />
+          </div>
+        }
+        <div class="form-field">
+          <label>Date of Birth <span class="req">*</span></label>
+          <input type="date" formControlName="dob" [max]="today" [class.invalid]="f.dob.invalid && f.dob.touched" />
+          @if (f.dob.touched && f.dob.errors?.['futureDate']) {
+            <div class="field-error">Date of Birth cannot be a future date!</div>
+          }
+        </div>
+        <div class="form-field">
+          <label>Marital Status <span class="req">*</span></label>
+          <select formControlName="maritalStatus" [class.invalid]="f.maritalStatus.invalid && f.maritalStatus.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Single">Single</option>
+            <option value="Married">Married</option>
+            <option value="Divorced">Divorced</option>
+            <option value="Widowed">Widowed</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Nationality <span class="req">*</span></label>
+          <select formControlName="nationality" [class.invalid]="f.nationality.invalid && f.nationality.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="American">American</option>
+            <option value="Canadian">Canadian</option>
+            <option value="Mexican">Mexican</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-field full-width">
+          <label>Passport-size Photo <span class="req">*</span></label>
+          <label class="file-upload-box">
+            <input type="file" accept=".jpg,.jpeg,.png" (change)="onPhotoSelected($event)" />
+            &#128247;
+            @if (selectedPhoto()) {
+              {{ selectedPhoto()!.name }}
+            } @else if (existingPhotoName()) {
+              {{ existingPhotoName() }} (click to replace)
+            } @else {
+              Click to upload - .jpg, .jpeg, .png only, max 2 MB
+            }
+          </label>
+        </div>
+      </div>
+
+      <div class="form-section-title">2. Contact Information</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Email <span class="req">*</span></label>
+          <input type="text" formControlName="email" [class.invalid]="f.email.invalid && f.email.touched" />
+        </div>
+        <div class="form-field">
+          <label>Phone Number <span class="req">*</span></label>
+          <input type="text" formControlName="phoneNumber" [class.invalid]="f.phoneNumber.invalid && f.phoneNumber.touched" />
+        </div>
+        <div class="form-field">
+          <label>Alternate Phone Number</label>
+          <input type="text" formControlName="alternatePhoneNumber" />
+        </div>
+        <div class="form-field">
+          <label>Emergency Contact Name <span class="req">*</span></label>
+          <input type="text" formControlName="emergencyContactName" [class.invalid]="f.emergencyContactName.invalid && f.emergencyContactName.touched" />
+        </div>
+        <div class="form-field">
+          <label>Emergency Contact Relationship <span class="req">*</span></label>
+          <select formControlName="emergencyContactRelationship" [class.invalid]="f.emergencyContactRelationship.invalid && f.emergencyContactRelationship.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Parent">Parent</option>
+            <option value="Spouse">Spouse</option>
+            <option value="Sibling">Sibling</option>
+            <option value="Friend">Friend</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Emergency Contact Number <span class="req">*</span></label>
+          <input type="text" formControlName="emergencyContactNumber" [class.invalid]="f.emergencyContactNumber.invalid && f.emergencyContactNumber.touched" />
+        </div>
+      </div>
+
+      <div class="form-section-title">3. Current Address</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Address Line 1 <span class="req">*</span></label>
+          <input type="text" formControlName="currentAddressLine1" [class.invalid]="f.currentAddressLine1.invalid && f.currentAddressLine1.touched" />
+        </div>
+        <div class="form-field">
+          <label>Address Line 2</label>
+          <input type="text" formControlName="currentAddressLine2" />
+        </div>
+        <div class="form-field">
+          <label>City <span class="req">*</span></label>
+          <input type="text" formControlName="currentCity" [class.invalid]="f.currentCity.invalid && f.currentCity.touched" />
+        </div>
+        <div class="form-field">
+          <label>State <span class="req">*</span></label>
+          <input type="text" formControlName="currentState" [class.invalid]="f.currentState.invalid && f.currentState.touched" />
+        </div>
+        <div class="form-field">
+          <label>County <span class="req">*</span></label>
+          <input type="text" formControlName="currentCounty" [class.invalid]="f.currentCounty.invalid && f.currentCounty.touched" />
+        </div>
+        <div class="form-field">
+          <label>Zip Code <span class="req">*</span></label>
+          <input type="text" formControlName="currentZipCode" [class.invalid]="f.currentZipCode.invalid && f.currentZipCode.touched" />
+        </div>
+      </div>
+
+      <div class="form-section-title">4. Permanent Address</div>
+      <div class="toggle-row">
+        <label class="toggle-switch">
+          <input type="checkbox" formControlName="sameAsCurrentAddress" />
+          <span class="slider"></span>
+        </label>
+        <label>Same as Current Address</label>
+      </div>
+      @if (showPermanentAddressFields) {
+        <div class="form-grid" style="margin-top: 14px;">
+          <div class="form-field">
+            <label>Address Line 1 <span class="req">*</span></label>
+            <input type="text" formControlName="permanentAddressLine1" [class.invalid]="f.permanentAddressLine1.invalid && f.permanentAddressLine1.touched" />
+          </div>
+          <div class="form-field">
+            <label>Address Line 2</label>
+            <input type="text" formControlName="permanentAddressLine2" />
+          </div>
+          <div class="form-field">
+            <label>City <span class="req">*</span></label>
+            <input type="text" formControlName="permanentCity" [class.invalid]="f.permanentCity.invalid && f.permanentCity.touched" />
+          </div>
+          <div class="form-field">
+            <label>State <span class="req">*</span></label>
+            <input type="text" formControlName="permanentState" [class.invalid]="f.permanentState.invalid && f.permanentState.touched" />
+          </div>
+          <div class="form-field">
+            <label>County <span class="req">*</span></label>
+            <input type="text" formControlName="permanentCounty" [class.invalid]="f.permanentCounty.invalid && f.permanentCounty.touched" />
+          </div>
+          <div class="form-field">
+            <label>Zip Code <span class="req">*</span></label>
+            <input type="text" formControlName="permanentZipCode" [class.invalid]="f.permanentZipCode.invalid && f.permanentZipCode.touched" />
+          </div>
+        </div>
+      }
+
+      <div class="form-section-title">5. Identification</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Driver's License Number</label>
+          <input type="text" formControlName="driversLicenseNumber" />
+        </div>
+        <div class="form-field">
+          <label>Driver's License State</label>
+          <input type="text" formControlName="driversLicenseState" placeholder="e.g. TX" />
+        </div>
+        <div class="form-field">
+          <label>Passport Number</label>
+          <input type="text" formControlName="passportNumber" />
+        </div>
+        <div class="form-field">
+          <label>Passport Expiry Date</label>
+          <input type="date" formControlName="passportExpiryDate" [class.invalid]="f.passportExpiryDate.invalid && f.passportExpiryDate.touched" />
+          @if (f.passportExpiryDate.touched && f.passportExpiryDate.errors?.['notFutureDate']) {
+            <div class="field-error">Passport Expiry Date must be a future date.</div>
+          }
+        </div>
+      </div>
+
+      <div class="form-section-title">6. Employment &amp; Income</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Employer Name <span class="req">*</span></label>
+          <input type="text" formControlName="employerName" [class.invalid]="f.employerName.invalid && f.employerName.touched" />
+        </div>
+        <div class="form-field">
+          <label>Employer Address</label>
+          <input type="text" formControlName="employerAddress" />
+        </div>
+        <div class="form-field">
+          <label>Employer Phone Number</label>
+          <input type="text" formControlName="employerPhoneNumber" />
+        </div>
+        <div class="form-field">
+          <label>Job Title / Designation <span class="req">*</span></label>
+          <input type="text" formControlName="jobTitle" [class.invalid]="f.jobTitle.invalid && f.jobTitle.touched" />
+        </div>
+        <div class="form-field">
+          <label>Employment Status <span class="req">*</span></label>
+          <select formControlName="employmentStatus" [class.invalid]="f.employmentStatus.invalid && f.employmentStatus.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Employed">Employed</option>
+            <option value="Self-Employed">Self-Employed</option>
+            <option value="Unemployed">Unemployed</option>
+            <option value="Retired">Retired</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Employment Type <span class="req">*</span></label>
+          <select formControlName="employmentType" [class.invalid]="f.employmentType.invalid && f.employmentType.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Self-employed">Self-employed</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Years at Current Job <span class="req">*</span></label>
+          <input type="text" formControlName="yearsAtCurrentJob" [class.invalid]="f.yearsAtCurrentJob.invalid && f.yearsAtCurrentJob.touched" />
+        </div>
+        <div class="form-field">
+          <label>Monthly Salary <span class="req">*</span></label>
+          <input type="text" formControlName="monthlySalary" [class.invalid]="f.monthlySalary.invalid && f.monthlySalary.touched" />
+        </div>
+        <div class="form-field">
+          <label>Annual Income</label>
+          <input type="text" formControlName="annualIncome" />
+        </div>
+        <div class="form-field">
+          <label>Other Income Source</label>
+          <input type="text" formControlName="otherIncomeSource" />
+        </div>
+        @if (showOtherIncomeAmount) {
+          <div class="form-field">
+            <label>Other Income Amount <span class="req">*</span></label>
+            <input type="text" formControlName="otherIncomeAmount" [class.invalid]="f.otherIncomeAmount.invalid && f.otherIncomeAmount.touched" />
+          </div>
+        }
+      </div>
+
+      <div class="form-section-title">7. Family / Dependents</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Number of Dependents <span class="req">*</span></label>
+          <input type="number" min="0" formControlName="numberOfDependents" [class.invalid]="f.numberOfDependents.invalid && f.numberOfDependents.touched" />
+        </div>
+        @if (showSpouseName) {
+          <div class="form-field">
+            <label>Spouse Name <span class="req">*</span></label>
+            <input type="text" formControlName="spouseName" [class.invalid]="f.spouseName.invalid && f.spouseName.touched" />
+          </div>
+        }
+        <div class="form-field">
+          <label>Spouse Employment Status</label>
+          <input type="text" formControlName="spouseEmploymentStatus" />
+        </div>
+        <div class="form-field">
+          <label>Spouse Income</label>
+          <input type="text" formControlName="spouseIncome" />
+        </div>
+      </div>
+
+      <div class="form-section-title">8. Preferences</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Preferred Language <span class="req">*</span></label>
+          <select formControlName="preferredLanguage" [class.invalid]="f.preferredLanguage.invalid && f.preferredLanguage.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="English">English</option>
+            <option value="Spanish">Spanish</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Preferred Communication Method <span class="req">*</span></label>
+          <select formControlName="preferredCommunicationMethod" [class.invalid]="f.preferredCommunicationMethod.invalid && f.preferredCommunicationMethod.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Email">Email</option>
+            <option value="SMS">SMS</option>
+            <option value="Phone">Phone</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Preferred Contact Time</label>
+          <select formControlName="preferredContactTime">
+            <option value="">Select</option>
+            <option value="Morning">Morning</option>
+            <option value="Afternoon">Afternoon</option>
+            <option value="Evening">Evening</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Preferred Name / Nickname</label>
+          <input type="text" formControlName="preferredNickname" />
+        </div>
+        <div class="form-field full-width">
+          <label>Additional Notes</label>
+          <textarea formControlName="additionalNotes"></textarea>
+        </div>
+      </div>
+
+      @if (!isEditMode()) {
+        <div class="checkbox-row">
+          <input type="checkbox" formControlName="agreementConfirmed" id="agreement" />
+          <label for="agreement">I confirm the details entered are correct and true to the best of my knowledge.</label>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="!isEditMode() && (!form.value.agreementConfirmed)">
+          Submit
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

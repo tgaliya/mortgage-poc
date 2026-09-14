@@ -1,0 +1,107 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEditMode() ? 'Edit Loan Details' : 'Add Loan Details' }}</h1>
+      <p class="subtitle">Fields marked with * are required</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    @if (!isEditMode()) {
+      <div class="form-toolbar">
+        <button type="button" class="btn-outline" (click)="clearForm()">Clear</button>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Loan # <span class="req">*</span></label>
+          <input type="text" formControlName="loanNumber" [class.invalid]="f.loanNumber.invalid && f.loanNumber.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Loan Type <span class="req">*</span></label>
+          <input type="text" formControlName="loanType" [class.invalid]="f.loanType.invalid && f.loanType.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Lien Position</label>
+          <select formControlName="lienPosition">
+            <option value="">Select</option>
+            <option value="1st">1st</option>
+            <option value="2nd">2nd</option>
+            <option value="3rd">3rd</option>
+            <option value="4th">4th</option>
+            <option value="5th">5th</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Loan Next Payment Due Date</label>
+          <input type="date" formControlName="nextPaymentDueDate" />
+        </div>
+
+        <div class="form-field">
+          <label>Original Loan Amount <span class="req">*</span></label>
+          <input type="text" formControlName="originalLoanAmount" [class.invalid]="f.originalLoanAmount.invalid && f.originalLoanAmount.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Investor <span class="req">*</span></label>
+          <select formControlName="investor" [class.invalid]="f.investor.invalid && f.investor.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Bank Owned">Bank Owned</option>
+            <option value="FHLMC">FHLMC</option>
+            <option value="FNMA">FNMA</option>
+            <option value="Other">Other</option>
+            <option value="Fannie Mac">Fannie Mac</option>
+            <option value="Federal Housing Administration">Federal Housing Administration</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Loan Payment Duration (months) <span class="req">*</span></label>
+          <input type="text" formControlName="loanPaymentDuration" [class.invalid]="f.loanPaymentDuration.invalid && f.loanPaymentDuration.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Loan Maturity Date</label>
+          <input type="date" formControlName="loanMaturityDate" />
+        </div>
+
+        <div class="form-field">
+          <label>Loan Last Payment Date</label>
+          <input type="date" formControlName="lastPaymentDate" [class.invalid]="f.lastPaymentDate.invalid && f.lastPaymentDate.touched" />
+          @if (f.lastPaymentDate.touched && f.lastPaymentDate.errors?.['futureDate']) {
+            <div class="field-error">Loan Last Payment Date cannot be a future date!</div>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Unpaid Principal Balance <span class="req">*</span></label>
+          <input type="text" formControlName="unpaidPrincipalBalance" [class.invalid]="f.unpaidPrincipalBalance.invalid && f.unpaidPrincipalBalance.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Loan Status <span class="req">*</span></label>
+          <select formControlName="loanStatus" [class.invalid]="f.loanStatus.invalid && f.loanStatus.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Active">Active</option>
+            <option value="Paid Off">Paid Off</option>
+            <option value="Delinquent">Delinquent</option>
+            <option value="In Default">In Default</option>
+            <option value="Foreclosure">Foreclosure</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,178 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEditMode() ? 'Edit Borrower Info' : 'Add Borrower Info' }}</h1>
+      <p class="subtitle">Fields marked with * are required</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    @if (!isEditMode()) {
+      <div class="form-toolbar">
+        <button type="button" class="btn-outline" (click)="clearForm()">Clear</button>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>First Name <span class="req">*</span></label>
+          <input type="text" formControlName="firstName" [class.invalid]="f.firstName.invalid && f.firstName.touched" />
+          @if (f.firstName.invalid && f.firstName.touched) {
+            <div class="field-error">First Name is required and must be valid.</div>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Middle Name</label>
+          <input type="text" formControlName="middleName" />
+        </div>
+
+        <div class="form-field">
+          <label>Last Name <span class="req">*</span></label>
+          <input type="text" formControlName="lastName" [class.invalid]="f.lastName.invalid && f.lastName.touched" />
+          @if (f.lastName.invalid && f.lastName.touched) {
+            <div class="field-error">Last Name is required and must be valid.</div>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Email <span class="req">*</span></label>
+          <input type="text" formControlName="email" [class.invalid]="f.email.invalid && f.email.touched" />
+          @if (f.email.invalid && f.email.touched) {
+            <div class="field-error">A valid email is required.</div>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Phone Number <span class="req">*</span></label>
+          <input type="text" formControlName="phoneNumber" placeholder="10-digit number" [class.invalid]="f.phoneNumber.invalid && f.phoneNumber.touched" />
+          @if (f.phoneNumber.invalid && f.phoneNumber.touched) {
+            <div class="field-error">Enter a valid 10-digit phone number.</div>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Date of Birth <span class="req">*</span></label>
+          <input type="date" formControlName="dob" [max]="today" [class.invalid]="f.dob.invalid && f.dob.touched" />
+          @if (f.dob.touched && f.dob.errors?.['required']) {
+            <div class="field-error">Date of Birth is required.</div>
+          }
+          @if (f.dob.touched && f.dob.errors?.['futureDate']) {
+            <div class="field-error">Date of Birth cannot be a future date!</div>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>SSN <span class="req">*</span></label>
+          <input
+            type="text"
+            formControlName="ssn"
+            placeholder="XXX-XX-XXXX"
+            maxlength="11"
+            (input)="onSsnInput($event)"
+            [class.invalid]="f.ssn.invalid && f.ssn.touched" />
+          @if (f.ssn.invalid && f.ssn.touched) {
+            <div class="field-error">SSN must follow the format XXX-XX-XXXX.</div>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Gender <span class="req">*</span></label>
+          <select formControlName="gender" [class.invalid]="f.gender.invalid && f.gender.touched">
+            <option value="" disabled selected>Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+          @if (f.gender.invalid && f.gender.touched) {
+            <div class="field-error">Gender is required.</div>
+          }
+        </div>
+
+        @if (showGenderSpecify) {
+          <div class="form-field">
+            <label>Please Specify <span class="req">*</span></label>
+            <input type="text" formControlName="genderSpecify" [class.invalid]="f.genderSpecify.invalid && f.genderSpecify.touched" />
+            @if (f.genderSpecify.invalid && f.genderSpecify.touched) {
+              <div class="field-error">Please specify your gender.</div>
+            }
+          </div>
+        }
+
+        <div class="form-field">
+          <label>Marital Status</label>
+          <select formControlName="maritalStatus">
+            <option value="">Select</option>
+            <option value="Single">Single</option>
+            <option value="Married">Married</option>
+            <option value="Divorced">Divorced</option>
+            <option value="Widowed">Widowed</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Employment Status</label>
+          <select formControlName="employmentStatus">
+            <option value="">Select</option>
+            <option value="Employed">Employed</option>
+            <option value="Self-Employed">Self-Employed</option>
+            <option value="Unemployed">Unemployed</option>
+            <option value="Retired">Retired</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Borrower Status <span class="req">*</span></label>
+          <select formControlName="borrowerStatus">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="toggle-row" style="margin-top: 18px;">
+        <label class="toggle-switch">
+          <input type="checkbox" formControlName="hasCoBorrower" />
+          <span class="slider"></span>
+        </label>
+        <label>Co-Borrower</label>
+      </div>
+
+      @if (showCoBorrowerFields) {
+        <div class="form-section-title">Co-Borrower Details</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Co-Borrower First Name</label>
+            <input type="text" formControlName="coFirstName" />
+          </div>
+          <div class="form-field">
+            <label>Co-Borrower Last Name</label>
+            <input type="text" formControlName="coLastName" />
+          </div>
+          <div class="form-field">
+            <label>Co-Borrower Email</label>
+            <input type="text" formControlName="coEmail" />
+          </div>
+          <div class="form-field">
+            <label>Co-Borrower Phone Number</label>
+            <input type="text" formControlName="coPhoneNumber" />
+          </div>
+          <div class="form-field">
+            <label>Co-Borrower DOB</label>
+            <input type="date" formControlName="coDob" [max]="today" />
+          </div>
+          <div class="form-field">
+            <label>Co-Borrower SSN</label>
+            <input type="text" formControlName="coSsn" placeholder="XXX-XX-XXXX" />
+          </div>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>

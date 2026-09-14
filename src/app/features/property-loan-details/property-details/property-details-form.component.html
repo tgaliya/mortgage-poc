@@ -1,0 +1,121 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEditMode() ? 'Edit Property Details' : 'Add Property Details' }}</h1>
+      <p class="subtitle">Fields marked with * are required</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    @if (!isEditMode()) {
+      <div class="form-toolbar">
+        <button type="button" class="btn-outline" (click)="clearForm()">Clear</button>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Property Name <span class="req">*</span></label>
+          <input type="text" formControlName="propertyName" [class.invalid]="f.propertyName.invalid && f.propertyName.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Street Address <span class="req">*</span></label>
+          <input type="text" formControlName="streetAddress" [class.invalid]="f.streetAddress.invalid && f.streetAddress.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Address Line 2</label>
+          <input type="text" formControlName="addressLine2" />
+        </div>
+
+        <div class="form-field">
+          <label>City <span class="req">*</span></label>
+          <input type="text" formControlName="city" [class.invalid]="f.city.invalid && f.city.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>State <span class="req">*</span></label>
+          <input type="text" formControlName="state" [class.invalid]="f.state.invalid && f.state.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>County <span class="req">*</span></label>
+          <input type="text" formControlName="county" [class.invalid]="f.county.invalid && f.county.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Zip Code <span class="req">*</span></label>
+          <input type="text" formControlName="zipCode" [class.invalid]="f.zipCode.invalid && f.zipCode.touched" />
+          @if (f.zipCode.invalid && f.zipCode.touched) {
+            <div class="field-error">Enter a valid Zip Code.</div>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Property Owner Contact Number</label>
+          <input type="text" formControlName="ownerContactNumber" [class.invalid]="f.ownerContactNumber.invalid && f.ownerContactNumber.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Property Status</label>
+          <select formControlName="propertyStatus">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Occupancy Status</label>
+          <select formControlName="occupancyStatus">
+            <option value="">Select</option>
+            <option value="Ready to Move">Ready to Move</option>
+            <option value="Under Construction">Under Construction</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Yet to Start">Yet to Start</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Amount <span class="req">*</span></label>
+          <input type="text" formControlName="amount" [class.invalid]="f.amount.invalid && f.amount.touched" />
+        </div>
+
+        <div class="form-field">
+          <label>Property Type</label>
+          <select formControlName="propertyType">
+            <option value="">Select</option>
+            <option value="Single Family">Single Family</option>
+            <option value="Condo">Condo</option>
+            <option value="Multi-unit">Multi-unit</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Occupancy Type</label>
+          <select formControlName="occupancyType">
+            <option value="">Select</option>
+            <option value="Owner Occupied">Owner Occupied</option>
+            <option value="Second Home">Second Home</option>
+            <option value="Investment Property">Investment Property</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Loan Purpose</label>
+          <select formControlName="loanPurpose">
+            <option value="">Select</option>
+            <option value="Purchase">Purchase</option>
+            <option value="Refinance">Refinance</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
