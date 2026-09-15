@@ -1,25 +1,32 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { BorrowerService } from '../../../core/services/borrower.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { Borrower } from '../../../core/models/borrower.model';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { matchesSearch } from '../../../shared/utils/search.util';
 
 @Component({
   selector: 'app-borrower-information-list',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, IconComponent],
   templateUrl: './borrower-information-list.component.html',
   styleUrl: './borrower-information-list.component.scss'
 })
 export class BorrowerInformationListComponent {
-  private borrowerService = inject(BorrowerService);
+  borrowerService = inject(BorrowerService);
   private toast = inject(ToastService);
   private confirmDialog = inject(ConfirmDialogService);
   private router = inject(Router);
 
-  borrowers = this.borrowerService.borrowers;
+  searchTerm = signal('');
+  filteredBorrowers = computed(() =>
+    this.borrowerService.borrowers().filter(b =>
+      matchesSearch(this.searchTerm(), b.firstName, b.lastName, b.email, b.phoneNumber)
+    )
+  );
   openMenuId = signal<string | null>(null);
 
   toggleMenu(id: string): void {

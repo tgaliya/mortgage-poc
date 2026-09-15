@@ -1,0 +1,36 @@
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(43, 74, 122, 0.12);
+  overflow: hidden;
+  z-index: 2000;
+
+  &__indeterminate {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 40%;
+    background: linear-gradient(90deg, #2b4a7a, #4f8ef7);
+    border-radius: 0 2px 2px 0;
+    animation: loading-bar-slide 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+@keyframes loading-bar-slide {
+  0% {
+    left: -40%;
+    width: 40%;
+  }
+  60% {
+    left: 100%;
+    width: 60%;
+  }
+  100% {
+    left: 100%;
+    width: 60%;
+  }
+}

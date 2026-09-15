@@ -1,24 +1,31 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApplicantService } from '../../../core/services/applicant.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { Applicant } from '../../../core/models/applicant.model';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { matchesSearch } from '../../../shared/utils/search.util';
 
 @Component({
   selector: 'app-personal-details-list',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, IconComponent],
   templateUrl: './personal-details-list.component.html'
 })
 export class PersonalDetailsListComponent {
-  private applicantService = inject(ApplicantService);
+  applicantService = inject(ApplicantService);
   private toast = inject(ToastService);
   private confirmDialog = inject(ConfirmDialogService);
   private router = inject(Router);
 
-  applicants = this.applicantService.applicants;
+  searchTerm = signal('');
+  filteredApplicants = computed(() =>
+    this.applicantService.applicants().filter(a =>
+      matchesSearch(this.searchTerm(), a.firstName, a.lastName, a.email, a.phoneNumber, a.nationality)
+    )
+  );
   openMenuId = signal<string | null>(null);
 
   toggleMenu(id: string): void {

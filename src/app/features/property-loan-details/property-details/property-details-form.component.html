@@ -13,16 +13,16 @@
       </div>
     }
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form" (ngSubmit)="submit()" appAutofocus appEnterSubmit>
       <div class="form-grid">
         <div class="form-field">
           <label>Property Name <span class="req">*</span></label>
-          <input type="text" formControlName="propertyName" [class.invalid]="f.propertyName.invalid && f.propertyName.touched" />
+          <input type="text" formControlName="propertyName" [class.invalid]="f.propertyName.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Street Address <span class="req">*</span></label>
-          <input type="text" formControlName="streetAddress" [class.invalid]="f.streetAddress.invalid && f.streetAddress.touched" />
+          <input type="text" formControlName="streetAddress" [class.invalid]="f.streetAddress.invalid && submitted()" />
         </div>
 
         <div class="form-field">
@@ -32,30 +32,32 @@
 
         <div class="form-field">
           <label>City <span class="req">*</span></label>
-          <input type="text" formControlName="city" [class.invalid]="f.city.invalid && f.city.touched" />
+          <input type="text" formControlName="city" [class.invalid]="f.city.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>State <span class="req">*</span></label>
-          <input type="text" formControlName="state" [class.invalid]="f.state.invalid && f.state.touched" />
+          <select formControlName="state" [class.invalid]="f.state.invalid && submitted()">
+            <option value="" disabled selected>Select</option>
+            @for (s of usStates; track s.code) {
+              <option [value]="s.code">{{ s.name }} ({{ s.code }})</option>
+            }
+          </select>
         </div>
 
         <div class="form-field">
           <label>County <span class="req">*</span></label>
-          <input type="text" formControlName="county" [class.invalid]="f.county.invalid && f.county.touched" />
+          <input type="text" formControlName="county" [class.invalid]="f.county.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Zip Code <span class="req">*</span></label>
-          <input type="text" formControlName="zipCode" [class.invalid]="f.zipCode.invalid && f.zipCode.touched" />
-          @if (f.zipCode.invalid && f.zipCode.touched) {
-            <div class="field-error">Enter a valid Zip Code.</div>
-          }
+          <input type="text" formControlName="zipCode" [class.invalid]="f.zipCode.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Property Owner Contact Number</label>
-          <input type="text" formControlName="ownerContactNumber" [class.invalid]="f.ownerContactNumber.invalid && f.ownerContactNumber.touched" />
+          <input type="text" formControlName="ownerContactNumber" [class.invalid]="f.ownerContactNumber.invalid && submitted()" />
         </div>
 
         <div class="form-field">
@@ -79,7 +81,7 @@
 
         <div class="form-field">
           <label>Amount <span class="req">*</span></label>
-          <input type="text" formControlName="amount" [class.invalid]="f.amount.invalid && f.amount.touched" />
+          <input type="text" formControlName="amount" [class.invalid]="f.amount.invalid && submitted()" />
         </div>
 
         <div class="form-field">

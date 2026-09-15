@@ -5,11 +5,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LoanService } from '../../../core/services/loan.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { amountValidator, noFutureDateValidator } from '../../../shared/validators/common-validators';
+import { AutofocusDirective } from '../../../shared/directives/autofocus.directive';
+import { EnterSubmitDirective } from '../../../shared/directives/enter-submit.directive';
+import { getValidationToastMessages } from '../../../shared/utils/form-validation.util';
+
+const FIELD_ERROR_MESSAGES: Record<string, string> = {
+  originalLoanAmount: 'Enter a valid Original Loan Amount (numbers only, up to 2 decimal places).',
+  unpaidPrincipalBalance: 'Enter a valid Unpaid Principal Balance (numbers only, up to 2 decimal places).',
+  lastPaymentDate: 'Loan Last Payment Date cannot be a future date!'
+};
 
 @Component({
   selector: 'app-loan-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AutofocusDirective, EnterSubmitDirective],
   templateUrl: './loan-details-form.component.html'
 })
 export class LoanDetailsFormComponent implements OnInit {
@@ -21,6 +30,7 @@ export class LoanDetailsFormComponent implements OnInit {
 
   isEditMode = signal(false);
   loanId = signal<string | null>(null);
+  submitted = signal(false);
 
   form = this.fb.group({
     loanNumber: ['', [Validators.required]],
@@ -55,6 +65,7 @@ export class LoanDetailsFormComponent implements OnInit {
 
   clearForm(): void {
     this.form.reset();
+    this.submitted.set(false);
     this.toast.info('Form cleared successfully!');
   }
 
@@ -63,13 +74,10 @@ export class LoanDetailsFormComponent implements OnInit {
   }
 
   async submit(): Promise<void> {
+    this.submitted.set(true);
+
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      if (this.form.controls.lastPaymentDate.errors?.['futureDate']) {
-        this.toast.error('Loan Last Payment Date cannot be a future date!');
-      } else {
-        this.toast.error('Please fill all the required fields!');
-      }
+      getValidationToastMessages(this.form, FIELD_ERROR_MESSAGES).forEach(msg => this.toast.error(msg));
       return;
     }
 

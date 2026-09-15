@@ -1,0 +1,89 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEditMode() ? 'Edit Role' : 'Add Role' }}</h1>
+      <p class="subtitle">Fields marked with * are required</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    @if (!isEditMode()) {
+      <div class="form-toolbar">
+        <button type="button" class="btn-outline" (click)="clearForm()">Clear</button>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" appAutofocus appEnterSubmit>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Role Name <span class="req">*</span></label>
+          <input type="text" formControlName="roleName" [class.invalid]="f.roleName.invalid && submitted()" />
+        </div>
+
+        <div class="form-field">
+          <label>Status <span class="req">*</span></label>
+          <select formControlName="status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="form-field full-width">
+          <label>Description</label>
+          <textarea formControlName="description"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section-title">
+        Permissions <span class="req">*</span>
+        <span class="permission-count">({{ permissionCount() }} selected)</span>
+      </div>
+
+      @if (permissionService.permissions().length === 0) {
+        <p class="subtitle">No permissions exist yet. Create some under Manage Permissions first.</p>
+      } @else {
+        <div class="permission-matrix-wrapper" [class.invalid]="permissionCount() === 0 && permissionsTouched()">
+          <table class="permission-matrix">
+            <thead>
+              <tr>
+                <th></th>
+                @for (a of actions; track a) {
+                  <th>{{ a }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of modules; track m) {
+                <tr class="module-group-row">
+                  <td [attr.colspan]="actions.length + 1">{{ m }}</td>
+                </tr>
+                @for (sm of subModulesFor(m); track sm) {
+                  <tr>
+                    <td class="module-label">{{ sm }}</td>
+                    @for (a of actions; track a) {
+                      <td>
+                        @if (permissionFor(sm, a); as perm) {
+                          <input
+                            type="checkbox"
+                            [checked]="isSelected(perm.id)"
+                            (change)="togglePermission(perm.id)" />
+                        } @else {
+                          <span class="matrix-empty">—</span>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -12,14 +12,28 @@ import {
   amountValidator
 } from '../../../shared/validators/common-validators';
 import { LOCKED_FIELD_KEYS } from '../../../core/models/applicant.model';
+import { AutofocusDirective } from '../../../shared/directives/autofocus.directive';
+import { EnterSubmitDirective } from '../../../shared/directives/enter-submit.directive';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { getValidationToastMessages } from '../../../shared/utils/form-validation.util';
+import { US_STATES_ONLY } from '../../../shared/constants/us-states.const';
 
 const ALLOWED_PHOTO_EXT = ['jpg', 'jpeg', 'png'];
 const MAX_PHOTO_MB = 2;
 
+const FIELD_ERROR_MESSAGES: Record<string, string> = {
+  email: 'Enter a valid email address.',
+  phoneNumber: 'Phone number must be exactly 10 digits.',
+  dob: 'Date of Birth cannot be a future date.',
+  passportExpiryDate: 'Passport Expiry Date must be a future date.',
+  monthlySalary: 'Enter a valid Monthly Salary (numbers only, up to 2 decimal places).',
+  annualIncome: 'Enter a valid Annual Income (numbers only, up to 2 decimal places).'
+};
+
 @Component({
   selector: 'app-personal-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AutofocusDirective, EnterSubmitDirective, IconComponent],
   templateUrl: './personal-details-form.component.html'
 })
 export class PersonalDetailsFormComponent implements OnInit {
@@ -35,6 +49,9 @@ export class PersonalDetailsFormComponent implements OnInit {
   today = new Date().toISOString().split('T')[0];
   selectedPhoto = signal<File | null>(null);
   existingPhotoName = signal<string | null>(null);
+  photoError = signal(false);
+  submitted = signal(false);
+  usStates = US_STATES_ONLY;
   lockedKeys = LOCKED_FIELD_KEYS;
 
   form = this.fb.group({
@@ -200,11 +217,14 @@ export class PersonalDetailsFormComponent implements OnInit {
       return;
     }
     this.selectedPhoto.set(file);
+    this.photoError.set(false);
   }
 
   clearForm(): void {
     this.form.reset({ numberOfDependents: '0', sameAsCurrentAddress: false, agreementConfirmed: false });
     this.selectedPhoto.set(null);
+    this.submitted.set(false);
+    this.photoError.set(false);
     this.toast.info('Form cleared successfully!');
   }
 
@@ -213,6 +233,8 @@ export class PersonalDetailsFormComponent implements OnInit {
   }
 
   async submit(): Promise<void> {
+    this.submitted.set(true);
+
     if (this.form.value.gender !== 'Other') {
       this.form.controls.genderSpecify.clearValidators();
     } else {
@@ -220,10 +242,20 @@ export class PersonalDetailsFormComponent implements OnInit {
     }
     this.form.controls.genderSpecify.updateValueAndValidity();
 
-    const photoMissing = !this.isEditMode() && !this.selectedPhoto();
+    if (this.form.invalid) {
+      getValidationToastMessages(this.form, FIELD_ERROR_MESSAGES).forEach(msg => this.toast.error(msg));
+      return;
+    }
 
-    if (this.form.invalid || photoMissing || (!this.isEditMode() && !this.form.value.agreementConfirmed)) {
-      this.form.markAllAsTouched();
+    const photoMissing = !this.isEditMode() && !this.selectedPhoto();
+    if (photoMissing) {
+      this.photoError.set(true);
+      this.toast.error('Please upload a passport-size photo!');
+      return;
+    }
+    this.photoError.set(false);
+
+    if (!this.isEditMode() && !this.form.value.agreementConfirmed) {
       this.toast.error('Please fill all the required fields!');
       return;
     }

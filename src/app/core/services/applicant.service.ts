@@ -1,11 +1,21 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { supabase } from '../supabase/supabase-client';
 import { Applicant } from '../models/applicant.model';
+import { LoadingService } from './loading.service';
+import { ActivityLogService } from './activity-log.service';
+import { AuthService } from './auth.service';
+import { UserService } from './user.service';
+import { resolveCurrentActor } from '../../shared/utils/activity-actor.util';
 
 const BUCKET = 'applicant-photos';
 
 @Injectable({ providedIn: 'root' })
 export class ApplicantService {
+  private loading = inject(LoadingService);
+  private activityLog = inject(ActivityLogService);
+  private auth = inject(AuthService);
+  private userService = inject(UserService);
+
   readonly applicants = signal<Applicant[]>([]);
 
   constructor() {
@@ -13,16 +23,21 @@ export class ApplicantService {
   }
 
   async refresh(): Promise<void> {
-    const { data, error } = await supabase
-      .from('applicants')
-      .select('*')
-      .order('created_at', { ascending: false });
+    this.loading.show();
+    try {
+      const { data, error } = await supabase
+        .from('applicants')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Failed to load applicants:', error.message);
-      return;
+      if (error) {
+        console.error('Failed to load applicants:', error.message);
+        return;
+      }
+      this.applicants.set((data ?? []).map(this.fromRow));
+    } finally {
+      this.loading.hide();
     }
-    this.applicants.set((data ?? []).map(this.fromRow));
   }
 
   getById(id: string): Applicant | undefined {
@@ -31,45 +46,88 @@ export class ApplicantService {
 
   /** Uploads the passport-size photo to Supabase Storage and returns its storage path. */
   async uploadPhoto(file: File): Promise<string | null> {
-    const path = `${crypto.randomUUID()}-${file.name}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file);
-    if (error) {
-      console.error('Failed to upload photo:', error.message);
-      return null;
+    this.loading.show();
+    try {
+      const path = `${crypto.randomUUID()}-${file.name}`;
+      const { error } = await supabase.storage.from(BUCKET).upload(path, file);
+      if (error) {
+        console.error('Failed to upload photo:', error.message);
+        return null;
+      }
+      return path;
+    } finally {
+      this.loading.hide();
     }
-    return path;
   }
 
   async create(applicant: Omit<Applicant, 'id' | 'createdAt' | 'updatedAt'>): Promise<Applicant | null> {
-    const { data, error } = await supabase.from('applicants').insert(this.toRow(applicant)).select().single();
-    if (error) {
-      console.error('Failed to create applicant:', error.message);
-      return null;
+    this.loading.show();
+    try {
+      const { data, error } = await supabase.from('applicants').insert(this.toRow(applicant)).select().single();
+      if (error) {
+        console.error('Failed to create applicant:', error.message);
+        return null;
+      }
+      await this.refresh();
+      const created = this.fromRow(data);
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Create',
+        entityType: 'Personal Details',
+        entityId: created.id,
+        entityLabel: `${created.firstName} ${created.lastName}`
+      });
+      return created;
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
-    return this.fromRow(data);
   }
 
   async update(id: string, changes: Partial<Applicant>): Promise<void> {
-    const { error } = await supabase.from('applicants').update(this.toRow(changes)).eq('id', id);
-    if (error) {
-      console.error('Failed to update applicant:', error.message);
-      return;
+    this.loading.show();
+    try {
+      const { error } = await supabase.from('applicants').update(this.toRow(changes)).eq('id', id);
+      if (error) {
+        console.error('Failed to update applicant:', error.message);
+        return;
+      }
+      const label = this.getById(id);
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Update',
+        entityType: 'Personal Details',
+        entityId: id,
+        entityLabel: label ? `${label.firstName} ${label.lastName}` : undefined
+      });
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
   }
 
   async delete(id: string): Promise<void> {
-    const applicant = this.getById(id);
-    const { error } = await supabase.from('applicants').delete().eq('id', id);
-    if (error) {
-      console.error('Failed to delete applicant:', error.message);
-      return;
+    this.loading.show();
+    try {
+      const applicant = this.getById(id);
+      const { error } = await supabase.from('applicants').delete().eq('id', id);
+      if (error) {
+        console.error('Failed to delete applicant:', error.message);
+        return;
+      }
+      if ((applicant as any)?.photoFilePath) {
+        await supabase.storage.from(BUCKET).remove([(applicant as any).photoFilePath]);
+      }
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Delete',
+        entityType: 'Personal Details',
+        entityId: id,
+        entityLabel: applicant ? `${applicant.firstName} ${applicant.lastName}` : undefined
+      });
+    } finally {
+      this.loading.hide();
     }
-    if ((applicant as any)?.photoFilePath) {
-      await supabase.storage.from(BUCKET).remove([(applicant as any).photoFilePath]);
-    }
-    await this.refresh();
   }
 
   private toRow(a: Partial<Applicant> & { photoFilePath?: string }): Record<string, any> {

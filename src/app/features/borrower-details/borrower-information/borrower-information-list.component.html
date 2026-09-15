@@ -7,6 +7,24 @@
     <button type="button" class="btn-primary" (click)="addBorrower()">+ Add Borrower Info</button>
   </div>
 
+  <div class="grid-toolbar">
+    <div class="search-box">
+      <span class="search-icon"><app-icon name="search"></app-icon></span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search borrowers..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)" />
+      @if (searchTerm()) {
+        <button type="button" class="search-clear-btn" (click)="searchTerm.set('')" aria-label="Clear search">
+          <app-icon name="close"></app-icon>
+        </button>
+      }
+    </div>
+    <span class="result-count">{{ filteredBorrowers().length }} of {{ borrowerService.borrowers().length }} records</span>
+  </div>
+
   <div class="grid-card">
     <table class="data-grid">
       <thead>
@@ -20,12 +38,16 @@
         </tr>
       </thead>
       <tbody>
-        @if (borrowers().length === 0) {
+        @if (borrowerService.borrowers().length === 0) {
           <tr>
             <td colspan="6" class="empty-row">No borrower records yet. Click "+ Add Borrower Info" to create one.</td>
           </tr>
+        } @else if (filteredBorrowers().length === 0) {
+          <tr>
+            <td colspan="6" class="empty-row">No records match "{{ searchTerm() }}".</td>
+          </tr>
         }
-        @for (borrower of borrowers(); track borrower.id) {
+        @for (borrower of filteredBorrowers(); track borrower.id) {
           <tr>
             <td>{{ borrower.firstName }}</td>
             <td>{{ borrower.lastName }}</td>

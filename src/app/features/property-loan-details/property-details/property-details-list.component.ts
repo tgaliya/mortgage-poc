@@ -1,24 +1,31 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PropertyService } from '../../../core/services/property.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { Property } from '../../../core/models/property.model';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { matchesSearch } from '../../../shared/utils/search.util';
 
 @Component({
   selector: 'app-property-details-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './property-details-list.component.html'
 })
 export class PropertyDetailsListComponent {
-  private propertyService = inject(PropertyService);
+  propertyService = inject(PropertyService);
   private toast = inject(ToastService);
   private confirmDialog = inject(ConfirmDialogService);
   private router = inject(Router);
 
-  properties = this.propertyService.properties;
+  searchTerm = signal('');
+  filteredProperties = computed(() =>
+    this.propertyService.properties().filter(p =>
+      matchesSearch(this.searchTerm(), p.propertyName, p.streetAddress, p.city, p.state, p.county, p.zipCode, p.propertyStatus)
+    )
+  );
   openMenuId = signal<string | null>(null);
 
   toggleMenu(id: string): void {

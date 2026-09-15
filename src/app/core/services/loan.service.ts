@@ -1,9 +1,19 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { supabase } from '../supabase/supabase-client';
 import { Loan } from '../models/loan.model';
+import { LoadingService } from './loading.service';
+import { ActivityLogService } from './activity-log.service';
+import { AuthService } from './auth.service';
+import { UserService } from './user.service';
+import { resolveCurrentActor } from '../../shared/utils/activity-actor.util';
 
 @Injectable({ providedIn: 'root' })
 export class LoanService {
+  private loading = inject(LoadingService);
+  private activityLog = inject(ActivityLogService);
+  private auth = inject(AuthService);
+  private userService = inject(UserService);
+
   readonly loans = signal<Loan[]>([]);
 
   constructor() {
@@ -11,16 +21,21 @@ export class LoanService {
   }
 
   async refresh(): Promise<void> {
-    const { data, error } = await supabase
-      .from('loans')
-      .select('*')
-      .order('created_at', { ascending: false });
+    this.loading.show();
+    try {
+      const { data, error } = await supabase
+        .from('loans')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Failed to load loans:', error.message);
-      return;
+      if (error) {
+        console.error('Failed to load loans:', error.message);
+        return;
+      }
+      this.loans.set((data ?? []).map(this.fromRow));
+    } finally {
+      this.loading.hide();
     }
-    this.loans.set((data ?? []).map(this.fromRow));
   }
 
   getById(id: string): Loan | undefined {
@@ -28,31 +43,70 @@ export class LoanService {
   }
 
   async create(loan: Omit<Loan, 'id' | 'createdAt' | 'updatedAt'>): Promise<Loan | null> {
-    const { data, error } = await supabase.from('loans').insert(this.toRow(loan)).select().single();
-    if (error) {
-      console.error('Failed to create loan:', error.message);
-      return null;
+    this.loading.show();
+    try {
+      const { data, error } = await supabase.from('loans').insert(this.toRow(loan)).select().single();
+      if (error) {
+        console.error('Failed to create loan:', error.message);
+        return null;
+      }
+      await this.refresh();
+      const created = this.fromRow(data);
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Create',
+        entityType: 'Loan Details',
+        entityId: created.id,
+        entityLabel: created.loanNumber
+      });
+      return created;
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
-    return this.fromRow(data);
   }
 
   async update(id: string, changes: Partial<Loan>): Promise<void> {
-    const { error } = await supabase.from('loans').update(this.toRow(changes)).eq('id', id);
-    if (error) {
-      console.error('Failed to update loan:', error.message);
-      return;
+    this.loading.show();
+    try {
+      const { error } = await supabase.from('loans').update(this.toRow(changes)).eq('id', id);
+      if (error) {
+        console.error('Failed to update loan:', error.message);
+        return;
+      }
+      const label = this.getById(id);
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Update',
+        entityType: 'Loan Details',
+        entityId: id,
+        entityLabel: label?.loanNumber
+      });
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase.from('loans').delete().eq('id', id);
-    if (error) {
-      console.error('Failed to delete loan:', error.message);
-      return;
+    this.loading.show();
+    try {
+      const label = this.getById(id);
+      const { error } = await supabase.from('loans').delete().eq('id', id);
+      if (error) {
+        console.error('Failed to delete loan:', error.message);
+        return;
+      }
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Delete',
+        entityType: 'Loan Details',
+        entityId: id,
+        entityLabel: label?.loanNumber
+      });
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
   }
 
   private toRow(l: Partial<Loan>): Record<string, any> {

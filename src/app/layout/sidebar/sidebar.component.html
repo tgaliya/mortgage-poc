@@ -1,18 +1,28 @@
 <aside class="sidebar">
   <div class="sidebar-header">
-    <span class="logo-icon">&#9670;</span>
-    <span class="logo-text">Outamation</span>
+    <svg class="brand-mark" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="brandOGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6ea8ff"></stop>
+          <stop offset="55%" stop-color="#4f8ef7"></stop>
+          <stop offset="100%" stop-color="#14224a"></stop>
+        </linearGradient>
+      </defs>
+      <ellipse cx="28" cy="25" rx="13" ry="17.5" fill="none" stroke="#7c8aa8" stroke-width="8.5" opacity="0.5" transform="rotate(20 28 25)"></ellipse>
+      <ellipse cx="20" cy="23" rx="13" ry="17.5" fill="none" stroke="url(#brandOGradient)" stroke-width="8.5" transform="rotate(-20 20 23)"></ellipse>
+    </svg>
+    <span class="brand-name">Outa Mortgage <span class="brand-name__poc">POC</span></span>
   </div>
 
   <nav class="sidebar-nav">
-    @for (module of modules; track module.label) {
+    @for (module of visibleModules(); track module.label) {
       <div class="nav-module">
         @if (module.path) {
           <a
             class="nav-item"
             [class.active]="isActiveModule(module)"
             [routerLink]="module.path">
-            <span class="nav-icon">{{ module.icon }}</span>
+            <span class="nav-icon"><app-icon [name]="module.icon"></app-icon></span>
             <span class="nav-label">{{ module.label }}</span>
           </a>
         } @else {
@@ -21,7 +31,7 @@
             class="nav-item nav-item-expandable"
             [class.active]="isActiveModule(module)"
             (click)="toggleModule(module)">
-            <span class="nav-icon">{{ module.icon }}</span>
+            <span class="nav-icon"><app-icon [name]="module.icon"></app-icon></span>
             <span class="nav-label">{{ module.label }}</span>
             <span class="chevron" [class.rotated]="isExpanded(module)">&#9660;</span>
           </button>
@@ -36,7 +46,8 @@
                   class="sub-nav-item"
                   [class.active]="isActiveSubModule(sub.path)"
                   [routerLink]="sub.path">
-                  {{ sub.label }}
+                  <span class="sub-nav-icon"><app-icon [name]="sub.icon"></app-icon></span>
+                  <span class="sub-nav-label">{{ sub.label }}</span>
                 </a>
               }
             </div>
@@ -47,6 +58,10 @@
   </nav>
 
   <div class="sidebar-footer">
+    <a routerLink="/my-profile" class="profile-link" routerLinkActive="active">
+      <span class="nav-icon"><app-icon name="profile"></app-icon></span>
+      My Profile
+    </a>
     <button type="button" class="logout-btn" (click)="logout()">
       <span>&#10148;</span> Logout
     </button>

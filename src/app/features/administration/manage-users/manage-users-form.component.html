@@ -1,0 +1,73 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEditMode() ? 'Edit User' : 'Add User' }}</h1>
+      <p class="subtitle">Fields marked with * are required</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    @if (!isEditMode()) {
+      <div class="form-toolbar">
+        <button type="button" class="btn-outline" (click)="clearForm()">Clear</button>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" appAutofocus appEnterSubmit>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>First Name <span class="req">*</span></label>
+          <input type="text" formControlName="firstName" [class.invalid]="f.firstName.invalid && submitted()" />
+        </div>
+
+        <div class="form-field">
+          <label>Last Name <span class="req">*</span></label>
+          <input type="text" formControlName="lastName" [class.invalid]="f.lastName.invalid && submitted()" />
+        </div>
+
+        <div class="form-field">
+          <label>Email <span class="req">*</span></label>
+          <input type="text" formControlName="email" [class.invalid]="f.email.invalid && submitted()" />
+        </div>
+
+        <div class="form-field">
+          <label>Phone Number</label>
+          <input type="text" formControlName="phoneNumber" placeholder="10-digit number" [class.invalid]="f.phoneNumber.invalid && submitted()" />
+        </div>
+
+        <div class="form-field">
+          <label>Password <span class="req">*</span></label>
+          <input type="password" formControlName="password" [class.invalid]="f.password.invalid && submitted()" [placeholder]="isEditMode() ? 'Leave blank to keep current password' : ''" />
+        </div>
+
+        <div class="form-field">
+          <label>Role <span class="req">*</span></label>
+          <select formControlName="roleId" [class.invalid]="f.roleId.invalid && submitted()">
+            <option value="" disabled selected>Select</option>
+            @for (role of roleService.roles(); track role.id) {
+              <option [value]="role.id">{{ role.roleName }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Status <span class="req">*</span></label>
+          <select formControlName="status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+          @if (isSelf()) {
+            <span class="hint-text">You cannot deactivate your own account.</span>
+          } @else if (isEditMode() && !canChangeStatus()) {
+            <span class="hint-text">You don't have permission to change user status.</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>

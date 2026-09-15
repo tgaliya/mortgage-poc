@@ -1,0 +1,69 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Manage Permissions</h1>
+      <p class="subtitle">Catalog of module + action permissions used by roles</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="addPermission()">+ Add Permission</button>
+  </div>
+
+  <div class="grid-toolbar">
+    <div class="search-box">
+      <span class="search-icon"><app-icon name="search"></app-icon></span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search permissions..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)" />
+      @if (searchTerm()) {
+        <button type="button" class="search-clear-btn" (click)="searchTerm.set('')" aria-label="Clear search">
+          <app-icon name="close"></app-icon>
+        </button>
+      }
+    </div>
+    <span class="result-count">{{ filteredPermissions().length }} of {{ permissionService.permissions().length }} records</span>
+  </div>
+
+  <div class="grid-card">
+    <table class="data-grid">
+      <thead>
+        <tr>
+          <th>Sub Module</th>
+          <th>Module</th>
+          <th>Action</th>
+          <th>Permission Name</th>
+          <th>Description</th>
+          <th class="action-col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (permissionService.permissions().length === 0) {
+          <tr><td colspan="6" class="empty-row">No permissions yet. Click "+ Add Permission" to create one.</td></tr>
+        } @else if (filteredPermissions().length === 0) {
+          <tr><td colspan="6" class="empty-row">No records match "{{ searchTerm() }}".</td></tr>
+        }
+        @for (permission of filteredPermissions(); track permission.id) {
+          <tr>
+            <td>{{ permission.subModule }}</td>
+            <td>{{ permission.module }}</td>
+            <td>{{ permission.action }}</td>
+            <td>{{ permission.name }}</td>
+            <td>{{ permission.description || '—' }}</td>
+            <td class="action-col">
+              <div class="menu-wrapper">
+                <button type="button" class="dots-btn" (click)="toggleMenu(permission.id)">&#8942;</button>
+                @if (openMenuId() === permission.id) {
+                  <div class="dropdown-menu">
+                    <button type="button" (click)="editPermission(permission)">Edit</button>
+                    <button type="button" class="danger" (click)="deletePermission(permission)">Delete</button>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Document Audit Trail</h1>
+      <p class="subtitle">Activity log for Document Details records</p>
+    </div>
+  </div>
+
+  <div class="grid-toolbar">
+    <div class="search-box">
+      <span class="search-icon"><app-icon name="search"></app-icon></span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search audit trail..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)" />
+      @if (searchTerm()) {
+        <button type="button" class="search-clear-btn" (click)="searchTerm.set('')" aria-label="Clear search">
+          <app-icon name="close"></app-icon>
+        </button>
+      }
+    </div>
+    <span class="result-count">{{ filteredEntries().length }} of {{ entries().length }} records</span>
+  </div>
+
+  <div class="grid-card">
+    <table class="data-grid">
+      <thead>
+        <tr>
+          <th>Date/Time</th>
+          <th>Actor</th>
+          <th>Action</th>
+          <th>Record</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (entries().length === 0) {
+          <tr><td colspan="4" class="empty-row">No document activity recorded yet.</td></tr>
+        } @else if (filteredEntries().length === 0) {
+          <tr><td colspan="4" class="empty-row">No records match "{{ searchTerm() }}".</td></tr>
+        }
+        @for (entry of filteredEntries(); track entry.id) {
+          <tr>
+            <td>{{ entry.createdAt | date: 'MM/dd/yyyy h:mm a' }}</td>
+            <td>{{ entry.actorName }}</td>
+            <td>{{ entry.action }}</td>
+            <td>{{ entry.entityLabel || '—' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

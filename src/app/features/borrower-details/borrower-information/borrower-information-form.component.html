@@ -13,14 +13,11 @@
       </div>
     }
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form" (ngSubmit)="submit()" appAutofocus appEnterSubmit>
       <div class="form-grid">
         <div class="form-field">
           <label>First Name <span class="req">*</span></label>
-          <input type="text" formControlName="firstName" [class.invalid]="f.firstName.invalid && f.firstName.touched" />
-          @if (f.firstName.invalid && f.firstName.touched) {
-            <div class="field-error">First Name is required and must be valid.</div>
-          }
+          <input type="text" formControlName="firstName" [class.invalid]="f.firstName.invalid && submitted()" />
         </div>
 
         <div class="form-field">
@@ -30,37 +27,22 @@
 
         <div class="form-field">
           <label>Last Name <span class="req">*</span></label>
-          <input type="text" formControlName="lastName" [class.invalid]="f.lastName.invalid && f.lastName.touched" />
-          @if (f.lastName.invalid && f.lastName.touched) {
-            <div class="field-error">Last Name is required and must be valid.</div>
-          }
+          <input type="text" formControlName="lastName" [class.invalid]="f.lastName.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Email <span class="req">*</span></label>
-          <input type="text" formControlName="email" [class.invalid]="f.email.invalid && f.email.touched" />
-          @if (f.email.invalid && f.email.touched) {
-            <div class="field-error">A valid email is required.</div>
-          }
+          <input type="text" formControlName="email" [class.invalid]="f.email.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Phone Number <span class="req">*</span></label>
-          <input type="text" formControlName="phoneNumber" placeholder="10-digit number" [class.invalid]="f.phoneNumber.invalid && f.phoneNumber.touched" />
-          @if (f.phoneNumber.invalid && f.phoneNumber.touched) {
-            <div class="field-error">Enter a valid 10-digit phone number.</div>
-          }
+          <input type="text" formControlName="phoneNumber" placeholder="10-digit number" [class.invalid]="f.phoneNumber.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Date of Birth <span class="req">*</span></label>
-          <input type="date" formControlName="dob" [max]="today" [class.invalid]="f.dob.invalid && f.dob.touched" />
-          @if (f.dob.touched && f.dob.errors?.['required']) {
-            <div class="field-error">Date of Birth is required.</div>
-          }
-          @if (f.dob.touched && f.dob.errors?.['futureDate']) {
-            <div class="field-error">Date of Birth cannot be a future date!</div>
-          }
+          <input type="date" formControlName="dob" [max]="today" [class.invalid]="f.dob.invalid && submitted()" />
         </div>
 
         <div class="form-field">
@@ -71,32 +53,23 @@
             placeholder="XXX-XX-XXXX"
             maxlength="11"
             (input)="onSsnInput($event)"
-            [class.invalid]="f.ssn.invalid && f.ssn.touched" />
-          @if (f.ssn.invalid && f.ssn.touched) {
-            <div class="field-error">SSN must follow the format XXX-XX-XXXX.</div>
-          }
+            [class.invalid]="f.ssn.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Gender <span class="req">*</span></label>
-          <select formControlName="gender" [class.invalid]="f.gender.invalid && f.gender.touched">
+          <select formControlName="gender" [class.invalid]="f.gender.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
-          @if (f.gender.invalid && f.gender.touched) {
-            <div class="field-error">Gender is required.</div>
-          }
         </div>
 
         @if (showGenderSpecify) {
           <div class="form-field">
             <label>Please Specify <span class="req">*</span></label>
-            <input type="text" formControlName="genderSpecify" [class.invalid]="f.genderSpecify.invalid && f.genderSpecify.touched" />
-            @if (f.genderSpecify.invalid && f.genderSpecify.touched) {
-              <div class="field-error">Please specify your gender.</div>
-            }
+            <input type="text" formControlName="genderSpecify" [class.invalid]="f.genderSpecify.invalid && submitted()" />
           </div>
         }
 

@@ -1,9 +1,19 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { supabase } from '../supabase/supabase-client';
 import { Property } from '../models/property.model';
+import { LoadingService } from './loading.service';
+import { ActivityLogService } from './activity-log.service';
+import { AuthService } from './auth.service';
+import { UserService } from './user.service';
+import { resolveCurrentActor } from '../../shared/utils/activity-actor.util';
 
 @Injectable({ providedIn: 'root' })
 export class PropertyService {
+  private loading = inject(LoadingService);
+  private activityLog = inject(ActivityLogService);
+  private auth = inject(AuthService);
+  private userService = inject(UserService);
+
   readonly properties = signal<Property[]>([]);
 
   constructor() {
@@ -11,16 +21,21 @@ export class PropertyService {
   }
 
   async refresh(): Promise<void> {
-    const { data, error } = await supabase
-      .from('properties')
-      .select('*')
-      .order('created_at', { ascending: false });
+    this.loading.show();
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Failed to load properties:', error.message);
-      return;
+      if (error) {
+        console.error('Failed to load properties:', error.message);
+        return;
+      }
+      this.properties.set((data ?? []).map(this.fromRow));
+    } finally {
+      this.loading.hide();
     }
-    this.properties.set((data ?? []).map(this.fromRow));
   }
 
   getById(id: string): Property | undefined {
@@ -28,36 +43,75 @@ export class PropertyService {
   }
 
   async create(property: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>): Promise<Property | null> {
-    const { data, error } = await supabase
-      .from('properties')
-      .insert(this.toRow(property))
-      .select()
-      .single();
+    this.loading.show();
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .insert(this.toRow(property))
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Failed to create property:', error.message);
-      return null;
+      if (error) {
+        console.error('Failed to create property:', error.message);
+        return null;
+      }
+      await this.refresh();
+      const created = this.fromRow(data);
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Create',
+        entityType: 'Property Details',
+        entityId: created.id,
+        entityLabel: created.propertyName
+      });
+      return created;
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
-    return this.fromRow(data);
   }
 
   async update(id: string, changes: Partial<Property>): Promise<void> {
-    const { error } = await supabase.from('properties').update(this.toRow(changes)).eq('id', id);
-    if (error) {
-      console.error('Failed to update property:', error.message);
-      return;
+    this.loading.show();
+    try {
+      const { error } = await supabase.from('properties').update(this.toRow(changes)).eq('id', id);
+      if (error) {
+        console.error('Failed to update property:', error.message);
+        return;
+      }
+      const label = this.getById(id);
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Update',
+        entityType: 'Property Details',
+        entityId: id,
+        entityLabel: label?.propertyName
+      });
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase.from('properties').delete().eq('id', id);
-    if (error) {
-      console.error('Failed to delete property:', error.message);
-      return;
+    this.loading.show();
+    try {
+      const label = this.getById(id);
+      const { error } = await supabase.from('properties').delete().eq('id', id);
+      if (error) {
+        console.error('Failed to delete property:', error.message);
+        return;
+      }
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Delete',
+        entityType: 'Property Details',
+        entityId: id,
+        entityLabel: label?.propertyName
+      });
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
   }
 
   private toRow(p: Partial<Property>): Record<string, any> {

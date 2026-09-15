@@ -1,24 +1,31 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DocumentService } from '../../../core/services/document.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { AppDocument } from '../../../core/models/document.model';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { matchesSearch } from '../../../shared/utils/search.util';
 
 @Component({
   selector: 'app-document-details-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './document-details-list.component.html'
 })
 export class DocumentDetailsListComponent {
-  private documentService = inject(DocumentService);
+  documentService = inject(DocumentService);
   private toast = inject(ToastService);
   private confirmDialog = inject(ConfirmDialogService);
   private router = inject(Router);
 
-  documents = this.documentService.documents;
+  searchTerm = signal('');
+  filteredDocuments = computed(() =>
+    this.documentService.documents().filter(d =>
+      matchesSearch(this.searchTerm(), d.documentName, d.documentType, d.documentSubType, d.documentStatus)
+    )
+  );
   openMenuId = signal<string | null>(null);
 
   toggleMenu(id: string): void {

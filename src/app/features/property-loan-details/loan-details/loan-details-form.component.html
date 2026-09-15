@@ -13,16 +13,16 @@
       </div>
     }
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form" (ngSubmit)="submit()" appAutofocus appEnterSubmit>
       <div class="form-grid">
         <div class="form-field">
           <label>Loan # <span class="req">*</span></label>
-          <input type="text" formControlName="loanNumber" [class.invalid]="f.loanNumber.invalid && f.loanNumber.touched" />
+          <input type="text" formControlName="loanNumber" [class.invalid]="f.loanNumber.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Loan Type <span class="req">*</span></label>
-          <input type="text" formControlName="loanType" [class.invalid]="f.loanType.invalid && f.loanType.touched" />
+          <input type="text" formControlName="loanType" [class.invalid]="f.loanType.invalid && submitted()" />
         </div>
 
         <div class="form-field">
@@ -45,12 +45,12 @@
 
         <div class="form-field">
           <label>Original Loan Amount <span class="req">*</span></label>
-          <input type="text" formControlName="originalLoanAmount" [class.invalid]="f.originalLoanAmount.invalid && f.originalLoanAmount.touched" />
+          <input type="text" formControlName="originalLoanAmount" [class.invalid]="f.originalLoanAmount.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Investor <span class="req">*</span></label>
-          <select formControlName="investor" [class.invalid]="f.investor.invalid && f.investor.touched">
+          <select formControlName="investor" [class.invalid]="f.investor.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Bank Owned">Bank Owned</option>
             <option value="FHLMC">FHLMC</option>
@@ -63,7 +63,7 @@
 
         <div class="form-field">
           <label>Loan Payment Duration (months) <span class="req">*</span></label>
-          <input type="text" formControlName="loanPaymentDuration" [class.invalid]="f.loanPaymentDuration.invalid && f.loanPaymentDuration.touched" />
+          <input type="text" formControlName="loanPaymentDuration" [class.invalid]="f.loanPaymentDuration.invalid && submitted()" />
         </div>
 
         <div class="form-field">
@@ -73,20 +73,17 @@
 
         <div class="form-field">
           <label>Loan Last Payment Date</label>
-          <input type="date" formControlName="lastPaymentDate" [class.invalid]="f.lastPaymentDate.invalid && f.lastPaymentDate.touched" />
-          @if (f.lastPaymentDate.touched && f.lastPaymentDate.errors?.['futureDate']) {
-            <div class="field-error">Loan Last Payment Date cannot be a future date!</div>
-          }
+          <input type="date" formControlName="lastPaymentDate" [class.invalid]="f.lastPaymentDate.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Unpaid Principal Balance <span class="req">*</span></label>
-          <input type="text" formControlName="unpaidPrincipalBalance" [class.invalid]="f.unpaidPrincipalBalance.invalid && f.unpaidPrincipalBalance.touched" />
+          <input type="text" formControlName="unpaidPrincipalBalance" [class.invalid]="f.unpaidPrincipalBalance.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Loan Status <span class="req">*</span></label>
-          <select formControlName="loanStatus" [class.invalid]="f.loanStatus.invalid && f.loanStatus.touched">
+          <select formControlName="loanStatus" [class.invalid]="f.loanStatus.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Active">Active</option>
             <option value="Paid Off">Paid Off</option>

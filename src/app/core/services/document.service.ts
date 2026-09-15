@@ -1,11 +1,21 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { supabase } from '../supabase/supabase-client';
 import { AppDocument } from '../models/document.model';
+import { LoadingService } from './loading.service';
+import { ActivityLogService } from './activity-log.service';
+import { AuthService } from './auth.service';
+import { UserService } from './user.service';
+import { resolveCurrentActor } from '../../shared/utils/activity-actor.util';
 
 const BUCKET = 'documents';
 
 @Injectable({ providedIn: 'root' })
 export class DocumentService {
+  private loading = inject(LoadingService);
+  private activityLog = inject(ActivityLogService);
+  private auth = inject(AuthService);
+  private userService = inject(UserService);
+
   readonly documents = signal<AppDocument[]>([]);
 
   constructor() {
@@ -13,16 +23,21 @@ export class DocumentService {
   }
 
   async refresh(): Promise<void> {
-    const { data, error } = await supabase
-      .from('documents')
-      .select('*')
-      .order('created_at', { ascending: false });
+    this.loading.show();
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Failed to load documents:', error.message);
-      return;
+      if (error) {
+        console.error('Failed to load documents:', error.message);
+        return;
+      }
+      this.documents.set((data ?? []).map(this.fromRow));
+    } finally {
+      this.loading.hide();
     }
-    this.documents.set((data ?? []).map(this.fromRow));
   }
 
   getById(id: string): AppDocument | undefined {
@@ -31,45 +46,88 @@ export class DocumentService {
 
   /** Uploads the file to Supabase Storage and returns its storage path. */
   async uploadFile(file: File): Promise<string | null> {
-    const path = `${crypto.randomUUID()}-${file.name}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file);
-    if (error) {
-      console.error('Failed to upload file:', error.message);
-      return null;
+    this.loading.show();
+    try {
+      const path = `${crypto.randomUUID()}-${file.name}`;
+      const { error } = await supabase.storage.from(BUCKET).upload(path, file);
+      if (error) {
+        console.error('Failed to upload file:', error.message);
+        return null;
+      }
+      return path;
+    } finally {
+      this.loading.hide();
     }
-    return path;
   }
 
   async create(doc: Omit<AppDocument, 'id' | 'createdAt' | 'updatedAt'>): Promise<AppDocument | null> {
-    const { data, error } = await supabase.from('documents').insert(this.toRow(doc)).select().single();
-    if (error) {
-      console.error('Failed to create document:', error.message);
-      return null;
+    this.loading.show();
+    try {
+      const { data, error } = await supabase.from('documents').insert(this.toRow(doc)).select().single();
+      if (error) {
+        console.error('Failed to create document:', error.message);
+        return null;
+      }
+      await this.refresh();
+      const created = this.fromRow(data);
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Create',
+        entityType: 'Document Details',
+        entityId: created.id,
+        entityLabel: created.documentName
+      });
+      return created;
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
-    return this.fromRow(data);
   }
 
   async update(id: string, changes: Partial<AppDocument>): Promise<void> {
-    const { error } = await supabase.from('documents').update(this.toRow(changes)).eq('id', id);
-    if (error) {
-      console.error('Failed to update document:', error.message);
-      return;
+    this.loading.show();
+    try {
+      const { error } = await supabase.from('documents').update(this.toRow(changes)).eq('id', id);
+      if (error) {
+        console.error('Failed to update document:', error.message);
+        return;
+      }
+      const label = this.getById(id);
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Update',
+        entityType: 'Document Details',
+        entityId: id,
+        entityLabel: label?.documentName
+      });
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
   }
 
   async delete(id: string): Promise<void> {
-    const doc = this.getById(id);
-    const { error } = await supabase.from('documents').delete().eq('id', id);
-    if (error) {
-      console.error('Failed to delete document:', error.message);
-      return;
+    this.loading.show();
+    try {
+      const doc = this.getById(id);
+      const { error } = await supabase.from('documents').delete().eq('id', id);
+      if (error) {
+        console.error('Failed to delete document:', error.message);
+        return;
+      }
+      if (doc?.filePath) {
+        await supabase.storage.from(BUCKET).remove([doc.filePath]);
+      }
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Delete',
+        entityType: 'Document Details',
+        entityId: id,
+        entityLabel: doc?.documentName
+      });
+    } finally {
+      this.loading.hide();
     }
-    if (doc?.filePath) {
-      await supabase.storage.from(BUCKET).remove([doc.filePath]);
-    }
-    await this.refresh();
   }
 
   private toRow(d: Partial<AppDocument>): Record<string, any> {

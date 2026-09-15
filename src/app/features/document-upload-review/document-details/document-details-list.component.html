@@ -7,6 +7,24 @@
     <button type="button" class="btn-primary" (click)="addDocument()">+ Add Document</button>
   </div>
 
+  <div class="grid-toolbar">
+    <div class="search-box">
+      <span class="search-icon"><app-icon name="search"></app-icon></span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search documents..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)" />
+      @if (searchTerm()) {
+        <button type="button" class="search-clear-btn" (click)="searchTerm.set('')" aria-label="Clear search">
+          <app-icon name="close"></app-icon>
+        </button>
+      }
+    </div>
+    <span class="result-count">{{ filteredDocuments().length }} of {{ documentService.documents().length }} records</span>
+  </div>
+
   <div class="grid-card">
     <table class="data-grid">
       <thead>
@@ -19,10 +37,12 @@
         </tr>
       </thead>
       <tbody>
-        @if (documents().length === 0) {
+        @if (documentService.documents().length === 0) {
           <tr><td colspan="5" class="empty-row">No documents yet. Click "+ Add Document" to upload one.</td></tr>
+        } @else if (filteredDocuments().length === 0) {
+          <tr><td colspan="5" class="empty-row">No records match "{{ searchTerm() }}".</td></tr>
         }
-        @for (doc of documents(); track doc.id) {
+        @for (doc of filteredDocuments(); track doc.id) {
           <tr>
             <td>{{ doc.documentName }}</td>
             <td>{{ doc.documentType }}</td>

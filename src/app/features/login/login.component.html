@@ -5,35 +5,24 @@
       <span class="brand-text">Outamation Mortgage Portal</span>
     </div>
 
-    <div class="demo-hint">
-      Demo credentials &mdash; Email: <b>{{ demoCredentials.email }}</b> &nbsp;|&nbsp;
-      Password: <b>{{ demoCredentials.password }}</b>
-    </div>
-
     <!-- STEP 1: EMAIL -->
     @if (step() === 'email') {
-      <form [formGroup]="emailForm" (ngSubmit)="submitEmail()" class="step-form">
+      <form [formGroup]="emailForm" (ngSubmit)="submitEmail()" class="step-form" appAutofocus appEnterSubmit>
         <h2>Sign in</h2>
         <label>Email <span class="req">*</span></label>
         <input
           type="text"
           formControlName="email"
           placeholder="Enter your email"
-          [class.invalid]="emailControl.invalid && emailControl.touched" />
-        @if (emailControl.invalid && emailControl.touched) {
-          @if (emailControl.errors?.['required']) {
-            <div class="field-error">Email is required.</div>
-          } @else if (emailControl.errors?.['pattern']) {
-            <div class="field-error">Enter a valid email address.</div>
-          }
-        }
+          (input)="credentialError.set(null)"
+          [class.invalid]="(emailControl.invalid && submitted()) || credentialError()" />
         <button type="submit" class="btn-primary full-width">Submit</button>
       </form>
     }
 
     <!-- STEP 2: PASSWORD -->
     @if (step() === 'password') {
-      <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="step-form">
+      <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="step-form" appAutofocus appEnterSubmit>
         <h2>Enter Password</h2>
         <p class="sub-text">Signing in as {{ emailForm.value.email }}</p>
         <label>Password <span class="req">*</span></label>
@@ -41,13 +30,8 @@
           type="password"
           formControlName="password"
           placeholder="Enter your password"
-          [class.invalid]="(passwordControl.invalid && passwordControl.touched) || credentialError()" />
-        @if (passwordControl.invalid && passwordControl.touched) {
-          <div class="field-error">Password is required.</div>
-        }
-        @if (credentialError()) {
-          <div class="field-error">{{ credentialError() }}</div>
-        }
+          (input)="credentialError.set(null)"
+          [class.invalid]="(passwordControl.invalid && submitted()) || credentialError()" />
         <button type="submit" class="btn-primary full-width">Submit</button>
         <button type="button" class="btn-link" (click)="backToEmail()">&larr; Back to Email</button>
       </form>
@@ -55,7 +39,7 @@
 
     <!-- STEP 3: CONFIRM -->
     @if (step() === 'confirm') {
-      <div class="step-form confirm-step">
+      <div class="step-form confirm-step" appAutofocus>
         <h2>Are you sure you want to proceed with Login?</h2>
         <div class="confirm-actions">
           <button type="button" class="btn-secondary" (click)="confirmNo()">No</button>

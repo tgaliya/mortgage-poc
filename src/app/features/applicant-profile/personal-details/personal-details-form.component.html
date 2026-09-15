@@ -13,13 +13,13 @@
       </div>
     }
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form" (ngSubmit)="submit()" appAutofocus appEnterSubmit>
 
       <div class="form-section-title">1. Basic Information</div>
       <div class="form-grid">
         <div class="form-field">
           <label>First Name <span class="req">*</span></label>
-          <input type="text" formControlName="firstName" [class.invalid]="f.firstName.invalid && f.firstName.touched" />
+          <input type="text" formControlName="firstName" [class.invalid]="f.firstName.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Middle Name</label>
@@ -27,11 +27,11 @@
         </div>
         <div class="form-field">
           <label>Last Name <span class="req">*</span></label>
-          <input type="text" formControlName="lastName" [class.invalid]="f.lastName.invalid && f.lastName.touched" />
+          <input type="text" formControlName="lastName" [class.invalid]="f.lastName.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Gender <span class="req">*</span></label>
-          <select formControlName="gender" [class.invalid]="f.gender.invalid && f.gender.touched">
+          <select formControlName="gender" [class.invalid]="f.gender.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
@@ -46,14 +46,11 @@
         }
         <div class="form-field">
           <label>Date of Birth <span class="req">*</span></label>
-          <input type="date" formControlName="dob" [max]="today" [class.invalid]="f.dob.invalid && f.dob.touched" />
-          @if (f.dob.touched && f.dob.errors?.['futureDate']) {
-            <div class="field-error">Date of Birth cannot be a future date!</div>
-          }
+          <input type="date" formControlName="dob" [max]="today" [class.invalid]="f.dob.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Marital Status <span class="req">*</span></label>
-          <select formControlName="maritalStatus" [class.invalid]="f.maritalStatus.invalid && f.maritalStatus.touched">
+          <select formControlName="maritalStatus" [class.invalid]="f.maritalStatus.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Single">Single</option>
             <option value="Married">Married</option>
@@ -63,7 +60,7 @@
         </div>
         <div class="form-field">
           <label>Nationality <span class="req">*</span></label>
-          <select formControlName="nationality" [class.invalid]="f.nationality.invalid && f.nationality.touched">
+          <select formControlName="nationality" [class.invalid]="f.nationality.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="American">American</option>
             <option value="Canadian">Canadian</option>
@@ -73,16 +70,18 @@
         </div>
         <div class="form-field full-width">
           <label>Passport-size Photo <span class="req">*</span></label>
-          <label class="file-upload-box">
+          <label class="file-upload-box" [class.invalid]="photoError()">
             <input type="file" accept=".jpg,.jpeg,.png" (change)="onPhotoSelected($event)" />
-            &#128247;
-            @if (selectedPhoto()) {
-              {{ selectedPhoto()!.name }}
-            } @else if (existingPhotoName()) {
-              {{ existingPhotoName() }} (click to replace)
-            } @else {
-              Click to upload - .jpg, .jpeg, .png only, max 2 MB
-            }
+            <span class="upload-icon"><app-icon name="upload"></app-icon></span>
+            <span>
+              @if (selectedPhoto()) {
+                {{ selectedPhoto()!.name }}
+              } @else if (existingPhotoName()) {
+                {{ existingPhotoName() }} (click to replace)
+              } @else {
+                Click to upload - .jpg, .jpeg, .png only, max 2 MB
+              }
+            </span>
           </label>
         </div>
       </div>
@@ -91,11 +90,11 @@
       <div class="form-grid">
         <div class="form-field">
           <label>Email <span class="req">*</span></label>
-          <input type="text" formControlName="email" [class.invalid]="f.email.invalid && f.email.touched" />
+          <input type="text" formControlName="email" [class.invalid]="f.email.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Phone Number <span class="req">*</span></label>
-          <input type="text" formControlName="phoneNumber" [class.invalid]="f.phoneNumber.invalid && f.phoneNumber.touched" />
+          <input type="text" formControlName="phoneNumber" [class.invalid]="f.phoneNumber.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Alternate Phone Number</label>
@@ -103,11 +102,11 @@
         </div>
         <div class="form-field">
           <label>Emergency Contact Name <span class="req">*</span></label>
-          <input type="text" formControlName="emergencyContactName" [class.invalid]="f.emergencyContactName.invalid && f.emergencyContactName.touched" />
+          <input type="text" formControlName="emergencyContactName" [class.invalid]="f.emergencyContactName.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Emergency Contact Relationship <span class="req">*</span></label>
-          <select formControlName="emergencyContactRelationship" [class.invalid]="f.emergencyContactRelationship.invalid && f.emergencyContactRelationship.touched">
+          <select formControlName="emergencyContactRelationship" [class.invalid]="f.emergencyContactRelationship.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Parent">Parent</option>
             <option value="Spouse">Spouse</option>
@@ -118,7 +117,7 @@
         </div>
         <div class="form-field">
           <label>Emergency Contact Number <span class="req">*</span></label>
-          <input type="text" formControlName="emergencyContactNumber" [class.invalid]="f.emergencyContactNumber.invalid && f.emergencyContactNumber.touched" />
+          <input type="text" formControlName="emergencyContactNumber" [class.invalid]="f.emergencyContactNumber.invalid && submitted()" />
         </div>
       </div>
 
@@ -126,7 +125,7 @@
       <div class="form-grid">
         <div class="form-field">
           <label>Address Line 1 <span class="req">*</span></label>
-          <input type="text" formControlName="currentAddressLine1" [class.invalid]="f.currentAddressLine1.invalid && f.currentAddressLine1.touched" />
+          <input type="text" formControlName="currentAddressLine1" [class.invalid]="f.currentAddressLine1.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Address Line 2</label>
@@ -134,19 +133,24 @@
         </div>
         <div class="form-field">
           <label>City <span class="req">*</span></label>
-          <input type="text" formControlName="currentCity" [class.invalid]="f.currentCity.invalid && f.currentCity.touched" />
+          <input type="text" formControlName="currentCity" [class.invalid]="f.currentCity.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>State <span class="req">*</span></label>
-          <input type="text" formControlName="currentState" [class.invalid]="f.currentState.invalid && f.currentState.touched" />
+          <select formControlName="currentState" [class.invalid]="f.currentState.invalid && submitted()">
+            <option value="" disabled selected>Select</option>
+            @for (s of usStates; track s.code) {
+              <option [value]="s.code">{{ s.name }} ({{ s.code }})</option>
+            }
+          </select>
         </div>
         <div class="form-field">
           <label>County <span class="req">*</span></label>
-          <input type="text" formControlName="currentCounty" [class.invalid]="f.currentCounty.invalid && f.currentCounty.touched" />
+          <input type="text" formControlName="currentCounty" [class.invalid]="f.currentCounty.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Zip Code <span class="req">*</span></label>
-          <input type="text" formControlName="currentZipCode" [class.invalid]="f.currentZipCode.invalid && f.currentZipCode.touched" />
+          <input type="text" formControlName="currentZipCode" [class.invalid]="f.currentZipCode.invalid && submitted()" />
         </div>
       </div>
 
@@ -162,7 +166,7 @@
         <div class="form-grid" style="margin-top: 14px;">
           <div class="form-field">
             <label>Address Line 1 <span class="req">*</span></label>
-            <input type="text" formControlName="permanentAddressLine1" [class.invalid]="f.permanentAddressLine1.invalid && f.permanentAddressLine1.touched" />
+            <input type="text" formControlName="permanentAddressLine1" [class.invalid]="f.permanentAddressLine1.invalid && submitted()" />
           </div>
           <div class="form-field">
             <label>Address Line 2</label>
@@ -170,19 +174,24 @@
           </div>
           <div class="form-field">
             <label>City <span class="req">*</span></label>
-            <input type="text" formControlName="permanentCity" [class.invalid]="f.permanentCity.invalid && f.permanentCity.touched" />
+            <input type="text" formControlName="permanentCity" [class.invalid]="f.permanentCity.invalid && submitted()" />
           </div>
           <div class="form-field">
             <label>State <span class="req">*</span></label>
-            <input type="text" formControlName="permanentState" [class.invalid]="f.permanentState.invalid && f.permanentState.touched" />
+            <select formControlName="permanentState" [class.invalid]="f.permanentState.invalid && submitted()">
+              <option value="" disabled selected>Select</option>
+              @for (s of usStates; track s.code) {
+                <option [value]="s.code">{{ s.name }} ({{ s.code }})</option>
+              }
+            </select>
           </div>
           <div class="form-field">
             <label>County <span class="req">*</span></label>
-            <input type="text" formControlName="permanentCounty" [class.invalid]="f.permanentCounty.invalid && f.permanentCounty.touched" />
+            <input type="text" formControlName="permanentCounty" [class.invalid]="f.permanentCounty.invalid && submitted()" />
           </div>
           <div class="form-field">
             <label>Zip Code <span class="req">*</span></label>
-            <input type="text" formControlName="permanentZipCode" [class.invalid]="f.permanentZipCode.invalid && f.permanentZipCode.touched" />
+            <input type="text" formControlName="permanentZipCode" [class.invalid]="f.permanentZipCode.invalid && submitted()" />
           </div>
         </div>
       }
@@ -203,10 +212,7 @@
         </div>
         <div class="form-field">
           <label>Passport Expiry Date</label>
-          <input type="date" formControlName="passportExpiryDate" [class.invalid]="f.passportExpiryDate.invalid && f.passportExpiryDate.touched" />
-          @if (f.passportExpiryDate.touched && f.passportExpiryDate.errors?.['notFutureDate']) {
-            <div class="field-error">Passport Expiry Date must be a future date.</div>
-          }
+          <input type="date" formControlName="passportExpiryDate" [class.invalid]="f.passportExpiryDate.invalid && submitted()" />
         </div>
       </div>
 
@@ -214,7 +220,7 @@
       <div class="form-grid">
         <div class="form-field">
           <label>Employer Name <span class="req">*</span></label>
-          <input type="text" formControlName="employerName" [class.invalid]="f.employerName.invalid && f.employerName.touched" />
+          <input type="text" formControlName="employerName" [class.invalid]="f.employerName.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Employer Address</label>
@@ -226,11 +232,11 @@
         </div>
         <div class="form-field">
           <label>Job Title / Designation <span class="req">*</span></label>
-          <input type="text" formControlName="jobTitle" [class.invalid]="f.jobTitle.invalid && f.jobTitle.touched" />
+          <input type="text" formControlName="jobTitle" [class.invalid]="f.jobTitle.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Employment Status <span class="req">*</span></label>
-          <select formControlName="employmentStatus" [class.invalid]="f.employmentStatus.invalid && f.employmentStatus.touched">
+          <select formControlName="employmentStatus" [class.invalid]="f.employmentStatus.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Employed">Employed</option>
             <option value="Self-Employed">Self-Employed</option>
@@ -240,7 +246,7 @@
         </div>
         <div class="form-field">
           <label>Employment Type <span class="req">*</span></label>
-          <select formControlName="employmentType" [class.invalid]="f.employmentType.invalid && f.employmentType.touched">
+          <select formControlName="employmentType" [class.invalid]="f.employmentType.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Full-time">Full-time</option>
             <option value="Part-time">Part-time</option>
@@ -250,11 +256,11 @@
         </div>
         <div class="form-field">
           <label>Years at Current Job <span class="req">*</span></label>
-          <input type="text" formControlName="yearsAtCurrentJob" [class.invalid]="f.yearsAtCurrentJob.invalid && f.yearsAtCurrentJob.touched" />
+          <input type="text" formControlName="yearsAtCurrentJob" [class.invalid]="f.yearsAtCurrentJob.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Monthly Salary <span class="req">*</span></label>
-          <input type="text" formControlName="monthlySalary" [class.invalid]="f.monthlySalary.invalid && f.monthlySalary.touched" />
+          <input type="text" formControlName="monthlySalary" [class.invalid]="f.monthlySalary.invalid && submitted()" />
         </div>
         <div class="form-field">
           <label>Annual Income</label>
@@ -267,7 +273,7 @@
         @if (showOtherIncomeAmount) {
           <div class="form-field">
             <label>Other Income Amount <span class="req">*</span></label>
-            <input type="text" formControlName="otherIncomeAmount" [class.invalid]="f.otherIncomeAmount.invalid && f.otherIncomeAmount.touched" />
+            <input type="text" formControlName="otherIncomeAmount" [class.invalid]="f.otherIncomeAmount.invalid && submitted()" />
           </div>
         }
       </div>
@@ -276,12 +282,12 @@
       <div class="form-grid">
         <div class="form-field">
           <label>Number of Dependents <span class="req">*</span></label>
-          <input type="number" min="0" formControlName="numberOfDependents" [class.invalid]="f.numberOfDependents.invalid && f.numberOfDependents.touched" />
+          <input type="number" min="0" formControlName="numberOfDependents" [class.invalid]="f.numberOfDependents.invalid && submitted()" />
         </div>
         @if (showSpouseName) {
           <div class="form-field">
             <label>Spouse Name <span class="req">*</span></label>
-            <input type="text" formControlName="spouseName" [class.invalid]="f.spouseName.invalid && f.spouseName.touched" />
+            <input type="text" formControlName="spouseName" [class.invalid]="f.spouseName.invalid && submitted()" />
           </div>
         }
         <div class="form-field">
@@ -298,7 +304,7 @@
       <div class="form-grid">
         <div class="form-field">
           <label>Preferred Language <span class="req">*</span></label>
-          <select formControlName="preferredLanguage" [class.invalid]="f.preferredLanguage.invalid && f.preferredLanguage.touched">
+          <select formControlName="preferredLanguage" [class.invalid]="f.preferredLanguage.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="English">English</option>
             <option value="Spanish">Spanish</option>
@@ -307,7 +313,7 @@
         </div>
         <div class="form-field">
           <label>Preferred Communication Method <span class="req">*</span></label>
-          <select formControlName="preferredCommunicationMethod" [class.invalid]="f.preferredCommunicationMethod.invalid && f.preferredCommunicationMethod.touched">
+          <select formControlName="preferredCommunicationMethod" [class.invalid]="f.preferredCommunicationMethod.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Email">Email</option>
             <option value="SMS">SMS</option>

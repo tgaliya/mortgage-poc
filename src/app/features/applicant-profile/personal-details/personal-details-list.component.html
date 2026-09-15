@@ -7,6 +7,24 @@
     <button type="button" class="btn-primary" (click)="addApplicant()">+ Add Personal Details</button>
   </div>
 
+  <div class="grid-toolbar">
+    <div class="search-box">
+      <span class="search-icon"><app-icon name="search"></app-icon></span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search personal details..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)" />
+      @if (searchTerm()) {
+        <button type="button" class="search-clear-btn" (click)="searchTerm.set('')" aria-label="Clear search">
+          <app-icon name="close"></app-icon>
+        </button>
+      }
+    </div>
+    <span class="result-count">{{ filteredApplicants().length }} of {{ applicantService.applicants().length }} records</span>
+  </div>
+
   <div class="grid-card">
     <table class="data-grid">
       <thead>
@@ -21,10 +39,12 @@
         </tr>
       </thead>
       <tbody>
-        @if (applicants().length === 0) {
+        @if (applicantService.applicants().length === 0) {
           <tr><td colspan="7" class="empty-row">No applicant profiles yet. Click "+ Add Personal Details" to create one.</td></tr>
+        } @else if (filteredApplicants().length === 0) {
+          <tr><td colspan="7" class="empty-row">No records match "{{ searchTerm() }}".</td></tr>
         }
-        @for (applicant of applicants(); track applicant.id) {
+        @for (applicant of filteredApplicants(); track applicant.id) {
           <tr>
             <td>{{ applicant.firstName }}</td>
             <td>{{ applicant.lastName }}</td>

@@ -5,11 +5,21 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PropertyService } from '../../../core/services/property.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { zipValidator, amountValidator, phoneValidator } from '../../../shared/validators/common-validators';
+import { AutofocusDirective } from '../../../shared/directives/autofocus.directive';
+import { EnterSubmitDirective } from '../../../shared/directives/enter-submit.directive';
+import { getValidationToastMessages } from '../../../shared/utils/form-validation.util';
+import { US_STATES } from '../../../shared/constants/us-states.const';
+
+const FIELD_ERROR_MESSAGES: Record<string, string> = {
+  zipCode: 'Enter a valid Zip Code (5 digits, or ZIP+4 format).',
+  ownerContactNumber: 'Property Owner Contact Number must be exactly 10 digits.',
+  amount: 'Enter a valid Amount (numbers only, up to 2 decimal places).'
+};
 
 @Component({
   selector: 'app-property-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AutofocusDirective, EnterSubmitDirective],
   templateUrl: './property-details-form.component.html'
 })
 export class PropertyDetailsFormComponent implements OnInit {
@@ -21,6 +31,8 @@ export class PropertyDetailsFormComponent implements OnInit {
 
   isEditMode = signal(false);
   propertyId = signal<string | null>(null);
+  submitted = signal(false);
+  usStates = US_STATES;
 
   form = this.fb.group({
     propertyName: ['', [Validators.required]],
@@ -57,6 +69,7 @@ export class PropertyDetailsFormComponent implements OnInit {
 
   clearForm(): void {
     this.form.reset({ propertyStatus: 'Active' });
+    this.submitted.set(false);
     this.toast.info('Form cleared successfully!');
   }
 
@@ -65,9 +78,10 @@ export class PropertyDetailsFormComponent implements OnInit {
   }
 
   async submit(): Promise<void> {
+    this.submitted.set(true);
+
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.toast.error('Please fill all the required fields!');
+      getValidationToastMessages(this.form, FIELD_ERROR_MESSAGES).forEach(msg => this.toast.error(msg));
       return;
     }
 

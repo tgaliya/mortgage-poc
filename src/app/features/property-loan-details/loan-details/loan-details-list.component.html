@@ -7,6 +7,24 @@
     <button type="button" class="btn-primary" (click)="addLoan()">+ Add Loan Details</button>
   </div>
 
+  <div class="grid-toolbar">
+    <div class="search-box">
+      <span class="search-icon"><app-icon name="search"></app-icon></span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search loans..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)" />
+      @if (searchTerm()) {
+        <button type="button" class="search-clear-btn" (click)="searchTerm.set('')" aria-label="Clear search">
+          <app-icon name="close"></app-icon>
+        </button>
+      }
+    </div>
+    <span class="result-count">{{ filteredLoans().length }} of {{ loanService.loans().length }} records</span>
+  </div>
+
   <div class="grid-card">
     <table class="data-grid">
       <thead>
@@ -21,10 +39,12 @@
         </tr>
       </thead>
       <tbody>
-        @if (loans().length === 0) {
+        @if (loanService.loans().length === 0) {
           <tr><td colspan="7" class="empty-row">No loan records yet. Click "+ Add Loan Details" to create one.</td></tr>
+        } @else if (filteredLoans().length === 0) {
+          <tr><td colspan="7" class="empty-row">No records match "{{ searchTerm() }}".</td></tr>
         }
-        @for (loan of loans(); track loan.id) {
+        @for (loan of filteredLoans(); track loan.id) {
           <tr>
             <td>{{ loan.loanNumber }}</td>
             <td>{{ loan.loanType }}</td>

@@ -7,6 +7,24 @@
     <button type="button" class="btn-primary" (click)="addProperty()">+ Add Property Details</button>
   </div>
 
+  <div class="grid-toolbar">
+    <div class="search-box">
+      <span class="search-icon"><app-icon name="search"></app-icon></span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search properties..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)" />
+      @if (searchTerm()) {
+        <button type="button" class="search-clear-btn" (click)="searchTerm.set('')" aria-label="Clear search">
+          <app-icon name="close"></app-icon>
+        </button>
+      }
+    </div>
+    <span class="result-count">{{ filteredProperties().length }} of {{ propertyService.properties().length }} records</span>
+  </div>
+
   <div class="grid-card">
     <table class="data-grid">
       <thead>
@@ -22,10 +40,12 @@
         </tr>
       </thead>
       <tbody>
-        @if (properties().length === 0) {
+        @if (propertyService.properties().length === 0) {
           <tr><td colspan="8" class="empty-row">No property records yet. Click "+ Add Property Details" to create one.</td></tr>
+        } @else if (filteredProperties().length === 0) {
+          <tr><td colspan="8" class="empty-row">No records match "{{ searchTerm() }}".</td></tr>
         }
-        @for (property of properties(); track property.id) {
+        @for (property of filteredProperties(); track property.id) {
           <tr>
             <td>{{ property.propertyName }}</td>
             <td>{{ property.streetAddress }}</td>

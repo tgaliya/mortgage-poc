@@ -151,6 +151,61 @@ create table if not exists applicants (
   updated_at timestamptz default now()
 );
 
+-- ---------- Permissions (Administration / Manage Permissions) ----------
+create table if not exists permissions (
+  id uuid primary key default gen_random_uuid(),
+  module text not null,
+  sub_module text not null,
+  action text not null,
+  name text not null,
+  description text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- ---------- Roles (Administration / Manage Roles) ----------
+create table if not exists roles (
+  id uuid primary key default gen_random_uuid(),
+  role_name text not null,
+  description text,
+  status text not null default 'Active',
+  -- Array of permissions.id - simpler than a join table for this POC.
+  permission_ids uuid[] default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- ---------- Users (Administration / Manage Users) ----------
+-- NOTE: password is stored as plain text. This app has no backend server
+-- to hash it against (client talks to Supabase directly), so this is
+-- POC-only - same spirit as the permissive RLS policies below. Do not
+-- reuse this pattern beyond a proof-of-concept.
+create table if not exists users (
+  id uuid primary key default gen_random_uuid(),
+  first_name text not null,
+  last_name text not null,
+  email text not null unique,
+  phone_number text,
+  password text not null,
+  role_id uuid references roles(id),
+  status text not null default 'Active',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- ---------- Activity Log (Borrower History / Document Audit Trail) ----------
+-- Append-only: the app never updates or deletes rows here, even for admins.
+create table if not exists activity_log (
+  id uuid primary key default gen_random_uuid(),
+  actor_user_id uuid,
+  actor_name text not null,
+  action text not null,
+  entity_type text not null,
+  entity_id text,
+  entity_label text,
+  created_at timestamptz default now()
+);
+
 -- ==========================================================================
 -- Row Level Security
 -- POC-level policies: allow the anon (public) role full read/write access.
@@ -164,12 +219,20 @@ alter table properties enable row level security;
 alter table loans enable row level security;
 alter table documents enable row level security;
 alter table applicants enable row level security;
+alter table permissions enable row level security;
+alter table roles enable row level security;
+alter table users enable row level security;
+alter table activity_log enable row level security;
 
 create policy "POC allow all - borrowers" on borrowers for all using (true) with check (true);
 create policy "POC allow all - properties" on properties for all using (true) with check (true);
 create policy "POC allow all - loans" on loans for all using (true) with check (true);
 create policy "POC allow all - documents" on documents for all using (true) with check (true);
 create policy "POC allow all - applicants" on applicants for all using (true) with check (true);
+create policy "POC allow all - permissions" on permissions for all using (true) with check (true);
+create policy "POC allow all - roles" on roles for all using (true) with check (true);
+create policy "POC allow all - users" on users for all using (true) with check (true);
+create policy "POC allow all - activity_log" on activity_log for all using (true) with check (true);
 
 -- ==========================================================================
 -- Storage buckets for file uploads (Document Details file, Applicant photo)
@@ -201,3 +264,84 @@ create policy "POC public update - photos bucket"
   on storage.objects for update using (bucket_id = 'applicant-photos');
 create policy "POC public delete - photos bucket"
   on storage.objects for delete using (bucket_id = 'applicant-photos');
+
+-- ==========================================================================
+-- Administration bootstrap seed data
+-- Fixed ids are used (instead of gen_random_uuid()) purely so the role and
+-- user rows below can reference the permission rows in the same script.
+-- This is the ONLY way into the app once the login screen no longer has a
+-- hardcoded credential: log in as the seeded admin below, then use
+-- Manage Users to create real accounts for everyone else.
+--   Admin login -> email: admin@outamation.com   password: Admin@123
+-- ==========================================================================
+
+-- 44 permissions: every sub-module x every action (View / Create / Edit / Delete)
+insert into permissions (id, module, sub_module, action, name) values
+  ('00000000-0000-0000-0000-000000000001', 'Dashboard', 'Dashboard', 'View', 'View Dashboard'),
+  ('00000000-0000-0000-0000-000000000002', 'Dashboard', 'Dashboard', 'Create', 'Create Dashboard'),
+  ('00000000-0000-0000-0000-000000000003', 'Dashboard', 'Dashboard', 'Edit', 'Edit Dashboard'),
+  ('00000000-0000-0000-0000-000000000004', 'Dashboard', 'Dashboard', 'Delete', 'Delete Dashboard'),
+  ('00000000-0000-0000-0000-000000000005', 'Borrower Details', 'Borrower Information', 'View', 'View Borrower Information'),
+  ('00000000-0000-0000-0000-000000000006', 'Borrower Details', 'Borrower Information', 'Create', 'Create Borrower Information'),
+  ('00000000-0000-0000-0000-000000000007', 'Borrower Details', 'Borrower Information', 'Edit', 'Edit Borrower Information'),
+  ('00000000-0000-0000-0000-000000000008', 'Borrower Details', 'Borrower Information', 'Delete', 'Delete Borrower Information'),
+  ('00000000-0000-0000-0000-000000000009', 'Borrower Details', 'Borrower History', 'View', 'View Borrower History'),
+  ('00000000-0000-0000-0000-00000000000a', 'Borrower Details', 'Borrower History', 'Create', 'Create Borrower History'),
+  ('00000000-0000-0000-0000-00000000000b', 'Borrower Details', 'Borrower History', 'Edit', 'Edit Borrower History'),
+  ('00000000-0000-0000-0000-00000000000c', 'Borrower Details', 'Borrower History', 'Delete', 'Delete Borrower History'),
+  ('00000000-0000-0000-0000-00000000000d', 'Property & Loan Details', 'Property Details', 'View', 'View Property Details'),
+  ('00000000-0000-0000-0000-00000000000e', 'Property & Loan Details', 'Property Details', 'Create', 'Create Property Details'),
+  ('00000000-0000-0000-0000-00000000000f', 'Property & Loan Details', 'Property Details', 'Edit', 'Edit Property Details'),
+  ('00000000-0000-0000-0000-000000000010', 'Property & Loan Details', 'Property Details', 'Delete', 'Delete Property Details'),
+  ('00000000-0000-0000-0000-000000000011', 'Property & Loan Details', 'Loan Details', 'View', 'View Loan Details'),
+  ('00000000-0000-0000-0000-000000000012', 'Property & Loan Details', 'Loan Details', 'Create', 'Create Loan Details'),
+  ('00000000-0000-0000-0000-000000000013', 'Property & Loan Details', 'Loan Details', 'Edit', 'Edit Loan Details'),
+  ('00000000-0000-0000-0000-000000000014', 'Property & Loan Details', 'Loan Details', 'Delete', 'Delete Loan Details'),
+  ('00000000-0000-0000-0000-000000000015', 'Document Upload & Review', 'Document Details', 'View', 'View Document Details'),
+  ('00000000-0000-0000-0000-000000000016', 'Document Upload & Review', 'Document Details', 'Create', 'Create Document Details'),
+  ('00000000-0000-0000-0000-000000000017', 'Document Upload & Review', 'Document Details', 'Edit', 'Edit Document Details'),
+  ('00000000-0000-0000-0000-000000000018', 'Document Upload & Review', 'Document Details', 'Delete', 'Delete Document Details'),
+  ('00000000-0000-0000-0000-000000000019', 'Document Upload & Review', 'Document Audit Trail', 'View', 'View Document Audit Trail'),
+  ('00000000-0000-0000-0000-00000000001a', 'Document Upload & Review', 'Document Audit Trail', 'Create', 'Create Document Audit Trail'),
+  ('00000000-0000-0000-0000-00000000001b', 'Document Upload & Review', 'Document Audit Trail', 'Edit', 'Edit Document Audit Trail'),
+  ('00000000-0000-0000-0000-00000000001c', 'Document Upload & Review', 'Document Audit Trail', 'Delete', 'Delete Document Audit Trail'),
+  ('00000000-0000-0000-0000-00000000001d', 'Applicant Profile', 'Personal Details', 'View', 'View Personal Details'),
+  ('00000000-0000-0000-0000-00000000001e', 'Applicant Profile', 'Personal Details', 'Create', 'Create Personal Details'),
+  ('00000000-0000-0000-0000-00000000001f', 'Applicant Profile', 'Personal Details', 'Edit', 'Edit Personal Details'),
+  ('00000000-0000-0000-0000-000000000020', 'Applicant Profile', 'Personal Details', 'Delete', 'Delete Personal Details'),
+  ('00000000-0000-0000-0000-000000000021', 'Administration', 'Manage Users', 'View', 'View Manage Users'),
+  ('00000000-0000-0000-0000-000000000022', 'Administration', 'Manage Users', 'Create', 'Create Manage Users'),
+  ('00000000-0000-0000-0000-000000000023', 'Administration', 'Manage Users', 'Edit', 'Edit Manage Users'),
+  ('00000000-0000-0000-0000-000000000024', 'Administration', 'Manage Users', 'Delete', 'Delete Manage Users'),
+  ('00000000-0000-0000-0000-00000000002d', 'Administration', 'Manage Users', 'Change Status', 'Change Status'),
+  ('00000000-0000-0000-0000-000000000025', 'Administration', 'Manage Roles', 'View', 'View Manage Roles'),
+  ('00000000-0000-0000-0000-000000000026', 'Administration', 'Manage Roles', 'Create', 'Create Manage Roles'),
+  ('00000000-0000-0000-0000-000000000027', 'Administration', 'Manage Roles', 'Edit', 'Edit Manage Roles'),
+  ('00000000-0000-0000-0000-000000000028', 'Administration', 'Manage Roles', 'Delete', 'Delete Manage Roles'),
+  ('00000000-0000-0000-0000-000000000029', 'Administration', 'Manage Permissions', 'View', 'View Manage Permissions'),
+  ('00000000-0000-0000-0000-00000000002a', 'Administration', 'Manage Permissions', 'Create', 'Create Manage Permissions'),
+  ('00000000-0000-0000-0000-00000000002b', 'Administration', 'Manage Permissions', 'Edit', 'Edit Manage Permissions'),
+  ('00000000-0000-0000-0000-00000000002c', 'Administration', 'Manage Permissions', 'Delete', 'Delete Manage Permissions')
+on conflict (id) do nothing;
+
+-- One "Administrator" role with every seeded permission checked
+insert into roles (id, role_name, description, status, permission_ids) values (
+  '00000000-0000-0000-0000-0000000000a1',
+  'Administrator',
+  'Full system access - all permissions.',
+  'Active',
+  array(select id from permissions)
+)
+on conflict (id) do nothing;
+
+-- One bootstrap admin user, assigned the Administrator role above
+insert into users (id, first_name, last_name, email, password, role_id, status) values (
+  '00000000-0000-0000-0000-0000000000b1',
+  'Admin',
+  'User',
+  'admin@outamation.com',
+  'Admin@123',
+  '00000000-0000-0000-0000-0000000000a1',
+  'Active'
+)
+on conflict (id) do nothing;

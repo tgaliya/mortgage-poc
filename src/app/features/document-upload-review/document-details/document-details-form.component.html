@@ -13,16 +13,16 @@
       </div>
     }
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form" (ngSubmit)="submit()" appAutofocus appEnterSubmit>
       <div class="form-grid">
         <div class="form-field">
           <label>Document Name <span class="req">*</span></label>
-          <input type="text" formControlName="documentName" [class.invalid]="f.documentName.invalid && f.documentName.touched" />
+          <input type="text" formControlName="documentName" [class.invalid]="f.documentName.invalid && submitted()" />
         </div>
 
         <div class="form-field">
           <label>Document Type <span class="req">*</span></label>
-          <select formControlName="documentType" [class.invalid]="f.documentType.invalid && f.documentType.touched">
+          <select formControlName="documentType" [class.invalid]="f.documentType.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             @for (type of documentTypes; track type) {
               <option [value]="type">{{ type }}</option>
@@ -32,7 +32,7 @@
 
         <div class="form-field">
           <label>Document Sub Type <span class="req">*</span></label>
-          <select formControlName="documentSubType" [class.invalid]="f.documentSubType.invalid && f.documentSubType.touched" [disabled]="subTypeOptions().length === 0">
+          <select formControlName="documentSubType" [class.invalid]="f.documentSubType.invalid && submitted()" [disabled]="subTypeOptions().length === 0">
             <option value="" disabled selected>{{ subTypeOptions().length === 0 ? 'Select Document Type first' : 'Select' }}</option>
             @for (sub of subTypeOptions(); track sub) {
               <option [value]="sub">{{ sub }}</option>
@@ -52,7 +52,7 @@
 
         <div class="form-field">
           <label>Document Status <span class="req">*</span></label>
-          <select formControlName="documentStatus" [class.invalid]="f.documentStatus.invalid && f.documentStatus.touched">
+          <select formControlName="documentStatus" [class.invalid]="f.documentStatus.invalid && submitted()">
             <option value="" disabled selected>Select</option>
             <option value="Pending Review">Pending Review</option>
             <option value="Approved">Approved</option>
@@ -67,17 +67,19 @@
         </div>
 
         <div class="form-field full-width">
-          <label>File Upload <span class="req">*</span></label>
-          <label class="file-upload-box">
+          <label>Document Upload <span class="req">*</span></label>
+          <label class="file-upload-box" [class.invalid]="fileError()">
             <input type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onFileSelected($event)" />
-            &#128206;
-            @if (selectedFile()) {
-              {{ selectedFile()!.name }}
-            } @else if (existingFileName()) {
-              {{ existingFileName() }} (click to replace)
-            } @else {
-              Click to upload - .pdf, .jpg, .jpeg, .png only, max 5 MB
-            }
+            <span class="upload-icon"><app-icon name="upload"></app-icon></span>
+            <span>
+              @if (selectedFile()) {
+                {{ selectedFile()!.name }}
+              } @else if (existingFileName()) {
+                {{ existingFileName() }} (click to replace)
+              } @else {
+                Click to upload - .pdf, .jpg, .jpeg, .png only, max 5 MB
+              }
+            </span>
           </label>
         </div>
       </div>

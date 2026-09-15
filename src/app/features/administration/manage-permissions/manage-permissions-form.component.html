@@ -1,0 +1,60 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>{{ isEditMode() ? 'Edit Permission' : 'Add Permission' }}</h1>
+      <p class="subtitle">Fields marked with * are required</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    @if (!isEditMode()) {
+      <div class="form-toolbar">
+        <button type="button" class="btn-outline" (click)="clearForm()">Clear</button>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" appAutofocus appEnterSubmit>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Sub Module <span class="req">*</span></label>
+          <select formControlName="subModule" [class.invalid]="f.subModule.invalid && submitted()">
+            <option value="" disabled selected>Select</option>
+            @for (sm of subModules; track sm) {
+              <option [value]="sm">{{ sm }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Module</label>
+          <input type="text" [value]="derivedModule()" disabled placeholder="Auto-filled from Sub Module" />
+        </div>
+
+        <div class="form-field">
+          <label>Action <span class="req">*</span></label>
+          <select formControlName="action" [class.invalid]="f.action.invalid && submitted()">
+            <option value="" disabled selected>Select</option>
+            @for (a of actions; track a) {
+              <option [value]="a">{{ a }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Permission Name <span class="req">*</span></label>
+          <input type="text" formControlName="name" [class.invalid]="f.name.invalid && submitted()" />
+        </div>
+
+        <div class="form-field full-width">
+          <label>Description</label>
+          <textarea formControlName="description"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>

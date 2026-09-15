@@ -1,6 +1,11 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { supabase } from '../supabase/supabase-client';
 import { Borrower } from '../models/borrower.model';
+import { LoadingService } from './loading.service';
+import { ActivityLogService } from './activity-log.service';
+import { AuthService } from './auth.service';
+import { UserService } from './user.service';
+import { resolveCurrentActor } from '../../shared/utils/activity-actor.util';
 
 /**
  * Borrower Information data layer - backed by Supabase (table: borrowers).
@@ -10,6 +15,11 @@ import { Borrower } from '../models/borrower.model';
  */
 @Injectable({ providedIn: 'root' })
 export class BorrowerService {
+  private loading = inject(LoadingService);
+  private activityLog = inject(ActivityLogService);
+  private auth = inject(AuthService);
+  private userService = inject(UserService);
+
   readonly borrowers = signal<Borrower[]>([]);
 
   constructor() {
@@ -17,16 +27,21 @@ export class BorrowerService {
   }
 
   async refresh(): Promise<void> {
-    const { data, error } = await supabase
-      .from('borrowers')
-      .select('*')
-      .order('created_at', { ascending: false });
+    this.loading.show();
+    try {
+      const { data, error } = await supabase
+        .from('borrowers')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Failed to load borrowers:', error.message);
-      return;
+      if (error) {
+        console.error('Failed to load borrowers:', error.message);
+        return;
+      }
+      this.borrowers.set((data ?? []).map(this.fromRow));
+    } finally {
+      this.loading.hide();
     }
-    this.borrowers.set((data ?? []).map(this.fromRow));
   }
 
   getById(id: string): Borrower | undefined {
@@ -34,40 +49,79 @@ export class BorrowerService {
   }
 
   async create(borrower: Omit<Borrower, 'id' | 'createdAt' | 'updatedAt'>): Promise<Borrower | null> {
-    const { data, error } = await supabase
-      .from('borrowers')
-      .insert(this.toRow(borrower))
-      .select()
-      .single();
+    this.loading.show();
+    try {
+      const { data, error } = await supabase
+        .from('borrowers')
+        .insert(this.toRow(borrower))
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Failed to create borrower:', error.message);
-      return null;
+      if (error) {
+        console.error('Failed to create borrower:', error.message);
+        return null;
+      }
+      await this.refresh();
+      const created = this.fromRow(data);
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Create',
+        entityType: 'Borrower Information',
+        entityId: created.id,
+        entityLabel: `${created.firstName} ${created.lastName}`
+      });
+      return created;
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
-    return this.fromRow(data);
   }
 
   async update(id: string, changes: Partial<Borrower>): Promise<void> {
-    const { error } = await supabase
-      .from('borrowers')
-      .update(this.toRow(changes))
-      .eq('id', id);
+    this.loading.show();
+    try {
+      const { error } = await supabase
+        .from('borrowers')
+        .update(this.toRow(changes))
+        .eq('id', id);
 
-    if (error) {
-      console.error('Failed to update borrower:', error.message);
-      return;
+      if (error) {
+        console.error('Failed to update borrower:', error.message);
+        return;
+      }
+      const label = this.getById(id);
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Update',
+        entityType: 'Borrower Information',
+        entityId: id,
+        entityLabel: label ? `${label.firstName} ${label.lastName}` : undefined
+      });
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase.from('borrowers').delete().eq('id', id);
-    if (error) {
-      console.error('Failed to delete borrower:', error.message);
-      return;
+    this.loading.show();
+    try {
+      const label = this.getById(id);
+      const { error } = await supabase.from('borrowers').delete().eq('id', id);
+      if (error) {
+        console.error('Failed to delete borrower:', error.message);
+        return;
+      }
+      await this.refresh();
+      this.activityLog.log({
+        ...resolveCurrentActor(this.auth, this.userService),
+        action: 'Delete',
+        entityType: 'Borrower Information',
+        entityId: id,
+        entityLabel: label ? `${label.firstName} ${label.lastName}` : undefined
+      });
+    } finally {
+      this.loading.hide();
     }
-    await this.refresh();
   }
 
   /** Maps camelCase app model -> snake_case DB row for insert/update. */

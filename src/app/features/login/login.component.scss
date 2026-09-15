@@ -25,16 +25,6 @@
   .brand-text { font-weight: 700; color: #1a2b4a; font-size: 15px; }
 }
 
-.demo-hint {
-  background: #eef3fc;
-  border: 1px solid #cfe0f7;
-  color: #2b4a7a;
-  font-size: 11.5px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  line-height: 1.5;
-}
 
 .step-form {
   display: flex;
@@ -78,11 +68,6 @@
     }
   }
 
-  .field-error {
-    color: #d64545;
-    font-size: 12px;
-    margin-top: 5px;
-  }
 }
 
 .full-width { width: 100%; margin-top: 20px; }

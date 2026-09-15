@@ -5,6 +5,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DocumentService } from '../../../core/services/document.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { DocumentType, DOCUMENT_SUB_TYPE_MAP } from '../../../core/models/document.model';
+import { AutofocusDirective } from '../../../shared/directives/autofocus.directive';
+import { EnterSubmitDirective } from '../../../shared/directives/enter-submit.directive';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { getValidationToastMessages } from '../../../shared/utils/form-validation.util';
 
 const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
 const MAX_FILE_MB = 5;
@@ -12,7 +16,7 @@ const MAX_FILE_MB = 5;
 @Component({
   selector: 'app-document-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AutofocusDirective, EnterSubmitDirective, IconComponent],
   templateUrl: './document-details-form.component.html'
 })
 export class DocumentDetailsFormComponent implements OnInit {
@@ -28,6 +32,8 @@ export class DocumentDetailsFormComponent implements OnInit {
   subTypeOptions = signal<string[]>([]);
   selectedFile = signal<File | null>(null);
   existingFileName = signal<string | null>(null);
+  fileError = signal(false);
+  submitted = signal(false);
 
   form = this.fb.group({
     documentName: ['', [Validators.required]],
@@ -81,6 +87,7 @@ export class DocumentDetailsFormComponent implements OnInit {
     }
 
     this.selectedFile.set(file);
+    this.fileError.set(false);
     this.toast.success('Document uploaded successfully!');
   }
 
@@ -88,6 +95,8 @@ export class DocumentDetailsFormComponent implements OnInit {
     this.form.reset();
     this.selectedFile.set(null);
     this.subTypeOptions.set([]);
+    this.submitted.set(false);
+    this.fileError.set(false);
     this.toast.info('Form cleared successfully!');
   }
 
@@ -96,13 +105,20 @@ export class DocumentDetailsFormComponent implements OnInit {
   }
 
   async submit(): Promise<void> {
-    const fileMissing = !this.isEditMode() && !this.selectedFile();
+    this.submitted.set(true);
 
-    if (this.form.invalid || fileMissing) {
-      this.form.markAllAsTouched();
-      this.toast.error('Please fill all the required fields!');
+    if (this.form.invalid) {
+      getValidationToastMessages(this.form, {}).forEach(msg => this.toast.error(msg));
       return;
     }
+
+    const fileMissing = !this.isEditMode() && !this.selectedFile();
+    if (fileMissing) {
+      this.fileError.set(true);
+      this.toast.error('Please upload a document file!');
+      return;
+    }
+    this.fileError.set(false);
 
     const v = this.form.value as any;
     const file = this.selectedFile();

@@ -1,0 +1,53 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>My Profile</h1>
+      <p class="subtitle">Fields marked with * are required</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    @if (currentUser(); as user) {
+      <div class="form-grid" style="margin-bottom: 22px;">
+        <div class="form-field">
+          <label>Name</label>
+          <input type="text" [value]="user.firstName + ' ' + user.lastName" disabled />
+        </div>
+        <div class="form-field">
+          <label>Email</label>
+          <input type="text" [value]="user.email" disabled />
+        </div>
+        <div class="form-field">
+          <label>Role</label>
+          <input type="text" [value]="currentRoleName() || '—'" disabled />
+        </div>
+      </div>
+    }
+
+    <div class="form-section-title">Change Password</div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" appAutofocus appEnterSubmit>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Current Password <span class="req">*</span></label>
+          <input type="password" formControlName="currentPassword" [class.invalid]="f.currentPassword.invalid && submitted()" />
+        </div>
+        <div class="form-field"></div>
+        <div class="form-field">
+          <label>New Password <span class="req">*</span></label>
+          <input type="password" formControlName="newPassword" [class.invalid]="f.newPassword.invalid && submitted()" />
+          <span class="hint-text">At least 6 characters.</span>
+        </div>
+        <div class="form-field">
+          <label>Confirm New Password <span class="req">*</span></label>
+          <input type="password" formControlName="confirmPassword" [class.invalid]="f.confirmPassword.invalid && submitted()" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="clearForm()">Clear</button>
+        <button type="submit" class="btn-primary">Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>

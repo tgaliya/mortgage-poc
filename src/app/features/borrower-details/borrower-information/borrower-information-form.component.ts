@@ -12,11 +12,23 @@ import {
   formatSsn,
   noFutureDateValidator
 } from '../../../shared/validators/common-validators';
+import { AutofocusDirective } from '../../../shared/directives/autofocus.directive';
+import { EnterSubmitDirective } from '../../../shared/directives/enter-submit.directive';
+import { getValidationToastMessages } from '../../../shared/utils/form-validation.util';
+
+const FIELD_ERROR_MESSAGES: Record<string, string> = {
+  firstName: 'First Name must contain only letters, spaces, hyphens, or apostrophes.',
+  lastName: 'Last Name must contain only letters, spaces, hyphens, or apostrophes.',
+  email: 'Enter a valid email address.',
+  phoneNumber: 'Phone number must be exactly 10 digits.',
+  dob: 'Date of Birth cannot be a future date.',
+  ssn: 'SSN must be in the format XXX-XX-XXXX.'
+};
 
 @Component({
   selector: 'app-borrower-information-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AutofocusDirective, EnterSubmitDirective],
   templateUrl: './borrower-information-form.component.html',
   styleUrl: './borrower-information-form.component.scss'
 })
@@ -31,6 +43,7 @@ export class BorrowerInformationFormComponent implements OnInit {
   isEditMode = signal(false);
   borrowerId = signal<string | null>(null);
   today = new Date().toISOString().split('T')[0];
+  submitted = signal(false);
 
   form = this.fb.group({
     firstName: ['', [Validators.required, nameValidator()]],
@@ -108,6 +121,7 @@ export class BorrowerInformationFormComponent implements OnInit {
 
   clearForm(): void {
     this.form.reset({ borrowerStatus: 'Active', hasCoBorrower: false });
+    this.submitted.set(false);
     this.toast.info('Form cleared successfully!');
   }
 
@@ -116,6 +130,8 @@ export class BorrowerInformationFormComponent implements OnInit {
   }
 
   async submit(): Promise<void> {
+    this.submitted.set(true);
+
     if (this.form.value.gender !== 'Other') {
       this.form.controls.genderSpecify.clearValidators();
     } else {
@@ -124,8 +140,7 @@ export class BorrowerInformationFormComponent implements OnInit {
     this.form.controls.genderSpecify.updateValueAndValidity();
 
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.toast.error('Please fill all the required fields!');
+      getValidationToastMessages(this.form, FIELD_ERROR_MESSAGES).forEach(msg => this.toast.error(msg));
       return;
     }
 

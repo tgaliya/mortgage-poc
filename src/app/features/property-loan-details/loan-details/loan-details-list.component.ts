@@ -1,24 +1,31 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LoanService } from '../../../core/services/loan.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { Loan } from '../../../core/models/loan.model';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { matchesSearch } from '../../../shared/utils/search.util';
 
 @Component({
   selector: 'app-loan-details-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './loan-details-list.component.html'
 })
 export class LoanDetailsListComponent {
-  private loanService = inject(LoanService);
+  loanService = inject(LoanService);
   private toast = inject(ToastService);
   private confirmDialog = inject(ConfirmDialogService);
   private router = inject(Router);
 
-  loans = this.loanService.loans;
+  searchTerm = signal('');
+  filteredLoans = computed(() =>
+    this.loanService.loans().filter(l =>
+      matchesSearch(this.searchTerm(), l.loanNumber, l.loanType, l.investor, l.loanStatus)
+    )
+  );
   openMenuId = signal<string | null>(null);
 
   toggleMenu(id: string): void {

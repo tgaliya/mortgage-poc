@@ -1,11 +1,14 @@
+import { IconName } from '../../shared/components/icon/icon.component';
+
 export interface NavSubModule {
   label: string;
   path: string;
+  icon: IconName;
 }
 
 export interface NavModule {
   label: string;
-  icon: string; // simple unicode/emoji-style icon placeholder for the POC
+  icon: IconName;
   path?: string; // present only for modules with no sub-modules
   subModules?: NavSubModule[];
 }
@@ -17,36 +20,45 @@ export interface NavModule {
  * and Applicant Profile all expand to reveal sub-modules (no icons on subs).
  */
 export const NAV_MODULES: NavModule[] = [
-  { label: 'Dashboard', icon: '\u25A6', path: '/dashboard' },
+  { label: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
   {
     label: 'Borrower Details',
-    icon: '\u{1F464}',
+    icon: 'users',
     subModules: [
-      { label: 'Borrower Information', path: '/borrower-details/borrower-information' },
-      { label: 'Borrower History', path: '/borrower-details/borrower-history' }
+      { label: 'Borrower Information', path: '/borrower-details/borrower-information', icon: 'profile' },
+      { label: 'Borrower History', path: '/borrower-details/borrower-history', icon: 'history' }
     ]
   },
   {
     label: 'Property & Loan Details',
-    icon: '\u{1F3E0}',
+    icon: 'home',
     subModules: [
-      { label: 'Property Details', path: '/property-loan-details/property-details' },
-      { label: 'Loan Details', path: '/property-loan-details/loan-details' }
+      { label: 'Property Details', path: '/property-loan-details/property-details', icon: 'home' },
+      { label: 'Loan Details', path: '/property-loan-details/loan-details', icon: 'bank' }
     ]
   },
   {
     label: 'Document Upload & Review',
-    icon: '\u{1F4C4}',
+    icon: 'document',
     subModules: [
-      { label: 'Document Details', path: '/document-upload-review/document-details' },
-      { label: 'Document Audit Trail', path: '/document-upload-review/document-audit-trail' }
+      { label: 'Document Details', path: '/document-upload-review/document-details', icon: 'document' },
+      { label: 'Document Audit Trail', path: '/document-upload-review/document-audit-trail', icon: 'audit' }
     ]
   },
   {
     label: 'Applicant Profile',
-    icon: '\u{1F4CB}',
+    icon: 'profile',
     subModules: [
-      { label: 'Personal Details', path: '/applicant-profile/personal-details' }
+      { label: 'Personal Details', path: '/applicant-profile/personal-details', icon: 'profile' }
+    ]
+  },
+  {
+    label: 'Administration',
+    icon: 'shield',
+    subModules: [
+      { label: 'Manage Users', path: '/administration/manage-users', icon: 'users' },
+      { label: 'Manage Roles', path: '/administration/manage-roles', icon: 'badge' },
+      { label: 'Manage Permissions', path: '/administration/manage-permissions', icon: 'key' }
     ]
   }
 ];
