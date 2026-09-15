@@ -44,6 +44,11 @@ export class ApplicantService {
     return this.applicants().find(a => a.id === id);
   }
 
+  /** Builds a public URL for a stored photo path (the applicant-photos bucket is public). */
+  getPhotoUrl(path: string): string {
+    return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
   /** Uploads the passport-size photo to Supabase Storage and returns its storage path. */
   async uploadPhoto(file: File): Promise<string | null> {
     this.loading.show();

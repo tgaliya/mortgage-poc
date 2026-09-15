@@ -37,7 +37,7 @@
 
         <div class="form-field">
           <label>Phone Number <span class="req">*</span></label>
-          <input type="text" formControlName="phoneNumber" placeholder="10-digit number" [class.invalid]="f.phoneNumber.invalid && submitted()" />
+          <input type="text" formControlName="phoneNumber" placeholder="(XXX) XXX-XXXX" maxlength="14" (input)="onPhoneInput($event)" [class.invalid]="f.phoneNumber.invalid && submitted()" />
         </div>
 
         <div class="form-field">

@@ -10,6 +10,7 @@ import {
   phoneValidator,
   ssnValidator,
   formatSsn,
+  formatUsPhone,
   noFutureDateValidator
 } from '../../../shared/validators/common-validators';
 import { AutofocusDirective } from '../../../shared/directives/autofocus.directive';
@@ -79,7 +80,7 @@ export class BorrowerInformationFormComponent implements OnInit {
           middleName: borrower.middleName,
           lastName: borrower.lastName,
           email: borrower.email,
-          phoneNumber: borrower.phoneNumber,
+          phoneNumber: formatUsPhone(borrower.phoneNumber ?? ''),
           dob: borrower.dob,
           ssn: borrower.ssn,
           gender: borrower.gender,
@@ -117,6 +118,12 @@ export class BorrowerInformationFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const formatted = formatSsn(input.value);
     this.form.controls.ssn.setValue(formatted, { emitEvent: false });
+  }
+
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const formatted = formatUsPhone(input.value);
+    this.form.controls.phoneNumber.setValue(formatted, { emitEvent: false });
   }
 
   clearForm(): void {
