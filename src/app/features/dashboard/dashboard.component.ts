@@ -1,5 +1,6 @@
 import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { BorrowerService } from '../../core/services/borrower.service';
 import { PropertyService } from '../../core/services/property.service';
 import { LoanService } from '../../core/services/loan.service';
@@ -27,6 +28,7 @@ const LOAN_STATUSES: LoanStatus[] = ['Active', 'Paid Off', 'Delinquent', 'In Def
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent {
+  private router = inject(Router);
   private borrowerService = inject(BorrowerService);
   private propertyService = inject(PropertyService);
   private loanService = inject(LoanService);
@@ -106,4 +108,8 @@ export class DashboardComponent {
   });
 
   maxLoanStatusCount = computed(() => Math.max(1, ...this.loanStatusBreakdown().map(s => s.count)));
+
+  goTo(path: string): void {
+    this.router.navigate([path]);
+  }
 }

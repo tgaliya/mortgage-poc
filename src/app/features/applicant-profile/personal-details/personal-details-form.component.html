@@ -83,6 +83,9 @@
               }
             </span>
           </label>
+          @if (photoPreviewUrl() || existingPhotoUrl()) {
+            <img class="photo-preview" [src]="photoPreviewUrl() ?? existingPhotoUrl()" alt="Photo preview" />
+          }
         </div>
       </div>
 

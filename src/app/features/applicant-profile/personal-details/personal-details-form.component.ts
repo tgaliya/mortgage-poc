@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -36,7 +36,7 @@ const FIELD_ERROR_MESSAGES: Record<string, string> = {
   imports: [CommonModule, ReactiveFormsModule, AutofocusDirective, EnterSubmitDirective, IconComponent],
   templateUrl: './personal-details-form.component.html'
 })
-export class PersonalDetailsFormComponent implements OnInit {
+export class PersonalDetailsFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private applicantService = inject(ApplicantService);
   private toast = inject(ToastService);
@@ -49,6 +49,8 @@ export class PersonalDetailsFormComponent implements OnInit {
   today = new Date().toISOString().split('T')[0];
   selectedPhoto = signal<File | null>(null);
   existingPhotoName = signal<string | null>(null);
+  photoPreviewUrl = signal<string | null>(null);
+  existingPhotoUrl = signal<string | null>(null);
   photoError = signal(false);
   submitted = signal(false);
   usStates = US_STATES_ONLY;
@@ -170,6 +172,9 @@ export class PersonalDetailsFormComponent implements OnInit {
       if (applicant) {
         this.form.patchValue(applicant as any);
         this.existingPhotoName.set(applicant.photoFileName);
+        if (applicant.photoFilePath) {
+          this.existingPhotoUrl.set(this.applicantService.getPhotoUrl(applicant.photoFilePath));
+        }
         // Locked fields (Spec 8.9) are disabled on Edit
         this.lockedKeys.forEach(key => this.form.controls[key as keyof typeof this.form.controls].disable());
       }
@@ -218,6 +223,12 @@ export class PersonalDetailsFormComponent implements OnInit {
     }
     this.selectedPhoto.set(file);
     this.photoError.set(false);
+
+    const prev = this.photoPreviewUrl();
+    if (prev) {
+      URL.revokeObjectURL(prev);
+    }
+    this.photoPreviewUrl.set(URL.createObjectURL(file));
   }
 
   clearForm(): void {
@@ -225,7 +236,19 @@ export class PersonalDetailsFormComponent implements OnInit {
     this.selectedPhoto.set(null);
     this.submitted.set(false);
     this.photoError.set(false);
+    const prev = this.photoPreviewUrl();
+    if (prev) {
+      URL.revokeObjectURL(prev);
+    }
+    this.photoPreviewUrl.set(null);
     this.toast.info('Form cleared successfully!');
+  }
+
+  ngOnDestroy(): void {
+    const prev = this.photoPreviewUrl();
+    if (prev) {
+      URL.revokeObjectURL(prev);
+    }
   }
 
   cancel(): void {

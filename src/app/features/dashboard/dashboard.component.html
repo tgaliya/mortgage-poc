@@ -3,7 +3,7 @@
   <p class="subtitle">Overview of application activity</p>
 
   <div class="stat-cards">
-    <div class="stat-card">
+    <div class="stat-card" (click)="goTo('/borrower-details/borrower-information')">
       <div class="stat-icon stat-icon--borrowers">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="9" cy="8" r="3"></circle>
@@ -17,7 +17,7 @@
         <div class="stat-label">Borrowers</div>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" (click)="goTo('/property-loan-details/property-details')">
       <div class="stat-icon stat-icon--properties">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 11.5 12 4l8 7.5"></path>
@@ -29,7 +29,7 @@
         <div class="stat-label">Properties</div>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" (click)="goTo('/property-loan-details/loan-details')">
       <div class="stat-icon stat-icon--loans">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 10 12 4l9 6"></path>
@@ -46,7 +46,7 @@
         <div class="stat-label">Loans</div>
       </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" (click)="goTo('/document-upload-review/document-details')">
       <div class="stat-icon stat-icon--documents">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"></path>
