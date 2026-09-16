@@ -10,6 +10,7 @@ import {
   PERMISSION_SUB_MODULES,
   PERMISSION_ACTIONS,
   SUB_MODULE_TO_MODULE,
+  READ_ONLY_SUB_MODULES,
   PermissionModule,
   PermissionSubModule
 } from '../../../core/models/permission.model';
@@ -84,59 +85,77 @@ export class ManageRolesFormComponent implements OnInit {
     return !!viewPerm && this.isSelected(viewPerm.id);
   }
 
-  /** Whether this row has any lockable action beyond View - rows like Dashboard only ever have View. */
+  /** Whether this row has any lockable action beyond View - read-only pages only ever have View. */
   hasLockableActions(subModule: PermissionSubModule): boolean {
+    if (READ_ONLY_SUB_MODULES.includes(subModule)) {
+      return false;
+    }
     return this.actions.some(a => a !== 'View' && !!this.permissionFor(subModule, a));
   }
 
-  private permissionIdsFor(subModule: PermissionSubModule): string[] {
+  isReadOnlySubModule(subModule: PermissionSubModule): boolean {
+    return READ_ONLY_SUB_MODULES.includes(subModule);
+  }
+
+  /** What the UI actually exposes for this row - read-only pages only ever expose View. */
+  private visiblePermissionIdsFor(subModule: PermissionSubModule): string[] {
+    const isReadOnly = READ_ONLY_SUB_MODULES.includes(subModule);
+    return this.permissionService.permissions()
+      .filter(p => p.subModule === subModule && (!isReadOnly || p.action === 'View'))
+      .map(p => p.id);
+  }
+
+  /** Every catalog permission for this row, including ones the UI hides - used only when clearing. */
+  private allPermissionIdsFor(subModule: PermissionSubModule): string[] {
     return this.permissionService.permissions().filter(p => p.subModule === subModule).map(p => p.id);
   }
 
-  private permissionIdsForModule(module: PermissionModule): string[] {
-    return this.subModulesFor(module).flatMap(sm => this.permissionIdsFor(sm));
+  private visiblePermissionIdsForModule(module: PermissionModule): string[] {
+    return this.subModulesFor(module).flatMap(sm => this.visiblePermissionIdsFor(sm));
+  }
+
+  private allPermissionIdsForModule(module: PermissionModule): string[] {
+    return this.subModulesFor(module).flatMap(sm => this.allPermissionIdsFor(sm));
   }
 
   isRowFullySelected(subModule: PermissionSubModule): boolean {
-    const ids = this.permissionIdsFor(subModule);
+    const ids = this.visiblePermissionIdsFor(subModule);
     return ids.length > 0 && ids.every(id => this.isSelected(id));
   }
 
   isRowPartiallySelected(subModule: PermissionSubModule): boolean {
-    const ids = this.permissionIdsFor(subModule);
+    const ids = this.visiblePermissionIdsFor(subModule);
     return ids.some(id => this.isSelected(id)) && !this.isRowFullySelected(subModule);
   }
 
   toggleRowSelectAll(subModule: PermissionSubModule): void {
     this.permissionsTouched.set(true);
-    const ids = this.permissionIdsFor(subModule);
     const current = new Set(this.selectedPermissionIds());
     if (this.isRowFullySelected(subModule)) {
-      ids.forEach(id => current.delete(id));
+      this.allPermissionIdsFor(subModule).forEach(id => current.delete(id));
     } else {
-      ids.forEach(id => current.add(id));
+      this.visiblePermissionIdsFor(subModule).forEach(id => current.add(id));
     }
     this.selectedPermissionIds.set(current);
   }
 
   isModuleFullySelected(module: PermissionModule): boolean {
-    const ids = this.permissionIdsForModule(module);
+    const ids = this.visiblePermissionIdsForModule(module);
     return ids.length > 0 && ids.every(id => this.isSelected(id));
   }
 
   isModulePartiallySelected(module: PermissionModule): boolean {
-    const ids = this.permissionIdsForModule(module);
+    const ids = this.visiblePermissionIdsForModule(module);
     return ids.some(id => this.isSelected(id)) && !this.isModuleFullySelected(module);
   }
 
   toggleModuleSelectAll(module: PermissionModule): void {
     this.permissionsTouched.set(true);
-    const ids = this.permissionIdsForModule(module);
     const current = new Set(this.selectedPermissionIds());
     if (this.isModuleFullySelected(module)) {
-      ids.forEach(id => current.delete(id));
+      this.allPermissionIdsForModule(module).forEach(id => current.delete(id));
     } else {
-      ids.forEach(id => current.add(id));
+      this.visiblePermissionIdsForModule(module).forEach(id => current.add(id));
     }
     this.selectedPermissionIds.set(current);
   }

@@ -1,10 +1,16 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PermissionService } from '../../../core/services/permission.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { PERMISSION_SUB_MODULES, PERMISSION_ACTIONS, SUB_MODULE_TO_MODULE, PermissionSubModule } from '../../../core/models/permission.model';
+import {
+  PERMISSION_SUB_MODULES,
+  PERMISSION_ACTIONS,
+  SUB_MODULE_TO_MODULE,
+  READ_ONLY_SUB_MODULES,
+  PermissionSubModule
+} from '../../../core/models/permission.model';
 import { AutofocusDirective } from '../../../shared/directives/autofocus.directive';
 import { EnterSubmitDirective } from '../../../shared/directives/enter-submit.directive';
 import { getValidationToastMessages } from '../../../shared/utils/form-validation.util';
@@ -28,7 +34,13 @@ export class ManagePermissionsFormComponent implements OnInit {
   subModules = PERMISSION_SUB_MODULES;
   actions = PERMISSION_ACTIONS;
   derivedModule = signal('');
+  selectedSubModule = signal('');
   private nameManuallyEdited = false;
+
+  /** Read-only pages (Dashboard, Borrower History, Document Audit Trail) only ever need a View permission. */
+  availableActions = computed(() =>
+    READ_ONLY_SUB_MODULES.includes(this.selectedSubModule() as PermissionSubModule) ? ['View'] : this.actions
+  );
 
   form = this.fb.group({
     subModule: ['', [Validators.required]],
@@ -40,6 +52,10 @@ export class ManagePermissionsFormComponent implements OnInit {
   ngOnInit(): void {
     this.form.controls.subModule.valueChanges.subscribe(sm => {
       this.derivedModule.set(sm ? SUB_MODULE_TO_MODULE[sm as PermissionSubModule] : '');
+      this.selectedSubModule.set(sm ?? '');
+      if (!this.availableActions().includes(this.form.value.action ?? '')) {
+        this.form.controls.action.setValue('');
+      }
       this.updateSuggestedName();
     });
     this.form.controls.action.valueChanges.subscribe(() => this.updateSuggestedName());
