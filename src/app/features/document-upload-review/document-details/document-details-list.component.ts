@@ -24,9 +24,9 @@ export class DocumentDetailsListComponent {
 
   searchTerm = signal('');
   filteredDocuments = computed(() =>
-    this.documentService.documents().filter(d =>
-      matchesSearch(this.searchTerm(), d.documentName, d.documentType, d.documentSubType, d.documentStatus)
-    )
+    this.documentService.documents()
+      .filter(d => matchesSearch(this.searchTerm(), d.documentName, d.documentType, d.documentSubType, d.documentStatus))
+      .sort((a, b) => a.documentName.localeCompare(b.documentName))
   );
   openMenuId = signal<string | null>(null);
   canCreate = computed(() => this.accessControl.hasPermission('Document Details', 'Create'));

@@ -26,9 +26,9 @@ export class ManagePermissionsListComponent {
 
   searchTerm = signal('');
   filteredPermissions = computed(() =>
-    this.permissionService.permissions().filter(p =>
-      matchesSearch(this.searchTerm(), p.module, p.subModule, p.action, p.name, p.description)
-    )
+    this.permissionService.permissions()
+      .filter(p => matchesSearch(this.searchTerm(), p.module, p.subModule, p.action, p.name, p.description))
+      .sort((a, b) => a.subModule.localeCompare(b.subModule) || a.action.localeCompare(b.action))
   );
   openMenuId = signal<string | null>(null);
   canCreate = computed(() => this.accessControl.hasPermission('Manage Permissions', 'Create'));

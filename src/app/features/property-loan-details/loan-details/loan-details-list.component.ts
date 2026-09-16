@@ -24,9 +24,9 @@ export class LoanDetailsListComponent {
 
   searchTerm = signal('');
   filteredLoans = computed(() =>
-    this.loanService.loans().filter(l =>
-      matchesSearch(this.searchTerm(), l.loanNumber, l.loanType, l.investor, l.loanStatus)
-    )
+    this.loanService.loans()
+      .filter(l => matchesSearch(this.searchTerm(), l.loanNumber, l.loanType, l.investor, l.loanStatus))
+      .sort((a, b) => a.loanNumber.localeCompare(b.loanNumber))
   );
   openMenuId = signal<string | null>(null);
   canCreate = computed(() => this.accessControl.hasPermission('Loan Details', 'Create'));

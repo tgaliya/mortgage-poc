@@ -25,9 +25,9 @@ export class BorrowerInformationListComponent {
 
   searchTerm = signal('');
   filteredBorrowers = computed(() =>
-    this.borrowerService.borrowers().filter(b =>
-      matchesSearch(this.searchTerm(), b.firstName, b.lastName, b.email, b.phoneNumber)
-    )
+    this.borrowerService.borrowers()
+      .filter(b => matchesSearch(this.searchTerm(), b.firstName, b.lastName, b.email, b.phoneNumber))
+      .sort((a, b) => a.firstName.localeCompare(b.firstName) || a.lastName.localeCompare(b.lastName))
   );
   openMenuId = signal<string | null>(null);
   canCreate = computed(() => this.accessControl.hasPermission('Borrower Information', 'Create'));

@@ -28,9 +28,9 @@ export class ManageUsersListComponent {
 
   searchTerm = signal('');
   filteredUsers = computed(() =>
-    this.userService.users().filter(u =>
-      matchesSearch(this.searchTerm(), u.firstName, u.lastName, u.email, this.roleName(u.roleId), u.status)
-    )
+    this.userService.users()
+      .filter(u => matchesSearch(this.searchTerm(), u.firstName, u.lastName, u.email, this.roleName(u.roleId), u.status))
+      .sort((a, b) => a.firstName.localeCompare(b.firstName) || a.lastName.localeCompare(b.lastName))
   );
   openMenuId = signal<string | null>(null);
   canCreate = computed(() => this.accessControl.hasPermission('Manage Users', 'Create'));

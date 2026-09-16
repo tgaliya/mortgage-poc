@@ -24,9 +24,9 @@ export class PropertyDetailsListComponent {
 
   searchTerm = signal('');
   filteredProperties = computed(() =>
-    this.propertyService.properties().filter(p =>
-      matchesSearch(this.searchTerm(), p.propertyName, p.streetAddress, p.city, p.state, p.county, p.zipCode, p.propertyStatus)
-    )
+    this.propertyService.properties()
+      .filter(p => matchesSearch(this.searchTerm(), p.propertyName, p.streetAddress, p.city, p.state, p.county, p.zipCode, p.propertyStatus))
+      .sort((a, b) => a.propertyName.localeCompare(b.propertyName))
   );
   openMenuId = signal<string | null>(null);
   canCreate = computed(() => this.accessControl.hasPermission('Property Details', 'Create'));

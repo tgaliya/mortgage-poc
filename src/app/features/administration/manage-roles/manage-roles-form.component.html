@@ -50,12 +50,20 @@
                 @for (a of actions; track a) {
                   <th>{{ a }}</th>
                 }
+                <th>Select All</th>
               </tr>
             </thead>
             <tbody>
               @for (m of modules; track m) {
                 <tr class="module-group-row">
                   <td [attr.colspan]="actions.length + 1">{{ m }}</td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      [checked]="isModuleFullySelected(m)"
+                      [indeterminate]="isModulePartiallySelected(m)"
+                      (change)="toggleModuleSelectAll(m)" />
+                  </td>
                 </tr>
                 @for (sm of subModulesFor(m); track sm) {
                   <tr>
@@ -81,6 +89,13 @@
                         }
                       </td>
                     }
+                    <td>
+                      <input
+                        type="checkbox"
+                        [checked]="isRowFullySelected(sm)"
+                        [indeterminate]="isRowPartiallySelected(sm)"
+                        (change)="toggleRowSelectAll(sm)" />
+                    </td>
                   </tr>
                 }
               }
