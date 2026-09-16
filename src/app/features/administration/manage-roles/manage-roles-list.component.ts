@@ -26,7 +26,9 @@ export class ManageRolesListComponent {
 
   searchTerm = signal('');
   filteredRoles = computed(() =>
-    this.roleService.roles().filter(r => matchesSearch(this.searchTerm(), r.roleName, r.description, r.status))
+    this.roleService.roles()
+      .filter(r => matchesSearch(this.searchTerm(), r.roleName, r.description, r.status))
+      .sort((a, b) => a.roleName.localeCompare(b.roleName))
   );
   openMenuId = signal<string | null>(null);
   canCreate = computed(() => this.accessControl.hasPermission('Manage Roles', 'Create'));

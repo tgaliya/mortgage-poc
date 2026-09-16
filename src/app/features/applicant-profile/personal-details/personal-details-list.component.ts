@@ -24,9 +24,9 @@ export class PersonalDetailsListComponent {
 
   searchTerm = signal('');
   filteredApplicants = computed(() =>
-    this.applicantService.applicants().filter(a =>
-      matchesSearch(this.searchTerm(), a.firstName, a.lastName, a.email, a.phoneNumber, a.nationality)
-    )
+    this.applicantService.applicants()
+      .filter(a => matchesSearch(this.searchTerm(), a.firstName, a.lastName, a.email, a.phoneNumber, a.nationality))
+      .sort((a, b) => a.firstName.localeCompare(b.firstName) || a.lastName.localeCompare(b.lastName))
   );
   openMenuId = signal<string | null>(null);
   canCreate = computed(() => this.accessControl.hasPermission('Personal Details', 'Create'));

@@ -89,6 +89,58 @@ export class ManageRolesFormComponent implements OnInit {
     return this.actions.some(a => a !== 'View' && !!this.permissionFor(subModule, a));
   }
 
+  private permissionIdsFor(subModule: PermissionSubModule): string[] {
+    return this.permissionService.permissions().filter(p => p.subModule === subModule).map(p => p.id);
+  }
+
+  private permissionIdsForModule(module: PermissionModule): string[] {
+    return this.subModulesFor(module).flatMap(sm => this.permissionIdsFor(sm));
+  }
+
+  isRowFullySelected(subModule: PermissionSubModule): boolean {
+    const ids = this.permissionIdsFor(subModule);
+    return ids.length > 0 && ids.every(id => this.isSelected(id));
+  }
+
+  isRowPartiallySelected(subModule: PermissionSubModule): boolean {
+    const ids = this.permissionIdsFor(subModule);
+    return ids.some(id => this.isSelected(id)) && !this.isRowFullySelected(subModule);
+  }
+
+  toggleRowSelectAll(subModule: PermissionSubModule): void {
+    this.permissionsTouched.set(true);
+    const ids = this.permissionIdsFor(subModule);
+    const current = new Set(this.selectedPermissionIds());
+    if (this.isRowFullySelected(subModule)) {
+      ids.forEach(id => current.delete(id));
+    } else {
+      ids.forEach(id => current.add(id));
+    }
+    this.selectedPermissionIds.set(current);
+  }
+
+  isModuleFullySelected(module: PermissionModule): boolean {
+    const ids = this.permissionIdsForModule(module);
+    return ids.length > 0 && ids.every(id => this.isSelected(id));
+  }
+
+  isModulePartiallySelected(module: PermissionModule): boolean {
+    const ids = this.permissionIdsForModule(module);
+    return ids.some(id => this.isSelected(id)) && !this.isModuleFullySelected(module);
+  }
+
+  toggleModuleSelectAll(module: PermissionModule): void {
+    this.permissionsTouched.set(true);
+    const ids = this.permissionIdsForModule(module);
+    const current = new Set(this.selectedPermissionIds());
+    if (this.isModuleFullySelected(module)) {
+      ids.forEach(id => current.delete(id));
+    } else {
+      ids.forEach(id => current.add(id));
+    }
+    this.selectedPermissionIds.set(current);
+  }
+
   togglePermission(permissionId: string): void {
     this.permissionsTouched.set(true);
     const current = new Set(this.selectedPermissionIds());
