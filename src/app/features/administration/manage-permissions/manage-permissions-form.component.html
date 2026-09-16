@@ -34,7 +34,7 @@
           <label>Action <span class="req">*</span></label>
           <select formControlName="action" [class.invalid]="f.action.invalid && submitted()">
             <option value="" disabled selected>Select</option>
-            @for (a of actions; track a) {
+            @for (a of availableActions(); track a) {
               <option [value]="a">{{ a }}</option>
             }
           </select>

@@ -14,14 +14,19 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        // Dashboard is intentionally never permission-gated - default landing page for any authenticated user.
         path: 'dashboard',
+        canActivate: [permissionGuard('Dashboard', 'View')],
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
         // My Profile is intentionally never permission-gated - always reachable regardless of role.
         path: 'my-profile',
         loadComponent: () => import('./features/my-profile/my-profile.component').then(m => m.MyProfileComponent)
+      },
+      {
+        // Reachable regardless of role - the safe landing spot for a role with no accessible modules at all.
+        path: 'no-access',
+        loadComponent: () => import('./shared/components/no-access/no-access.component').then(m => m.NoAccessComponent)
       },
       {
         path: 'borrower-details/borrower-information',

@@ -46,27 +46,34 @@
           <table class="permission-matrix">
             <thead>
               <tr>
+                <th>Select All</th>
                 <th></th>
                 @for (a of actions; track a) {
                   <th>{{ a }}</th>
                 }
-                <th>Select All</th>
               </tr>
             </thead>
             <tbody>
               @for (m of modules; track m) {
                 <tr class="module-group-row">
-                  <td [attr.colspan]="actions.length + 1">{{ m }}</td>
-                  <td>
+                  <td class="select-all-cell">
                     <input
                       type="checkbox"
                       [checked]="isModuleFullySelected(m)"
                       [indeterminate]="isModulePartiallySelected(m)"
                       (change)="toggleModuleSelectAll(m)" />
                   </td>
+                  <td [attr.colspan]="actions.length + 1">{{ m }}</td>
                 </tr>
                 @for (sm of subModulesFor(m); track sm) {
                   <tr>
+                    <td class="select-all-cell">
+                      <input
+                        type="checkbox"
+                        [checked]="isRowFullySelected(sm)"
+                        [indeterminate]="isRowPartiallySelected(sm)"
+                        (change)="toggleRowSelectAll(sm)" />
+                    </td>
                     <td class="module-label">
                       {{ sm }}
                       @if (!isViewSelected(sm) && hasLockableActions(sm)) {
@@ -79,23 +86,20 @@
                     @for (a of actions; track a) {
                       <td>
                         @if (permissionFor(sm, a); as perm) {
-                          <input
-                            type="checkbox"
-                            [checked]="isSelected(perm.id)"
-                            [disabled]="a !== 'View' && !isViewSelected(sm)"
-                            (change)="togglePermission(perm.id)" />
+                          @if (isReadOnlySubModule(sm) && a !== 'View') {
+                            <span class="matrix-empty">—</span>
+                          } @else {
+                            <input
+                              type="checkbox"
+                              [checked]="isSelected(perm.id)"
+                              [disabled]="a !== 'View' && !isViewSelected(sm)"
+                              (change)="togglePermission(perm.id)" />
+                          }
                         } @else {
                           <span class="matrix-empty">—</span>
                         }
                       </td>
                     }
-                    <td>
-                      <input
-                        type="checkbox"
-                        [checked]="isRowFullySelected(sm)"
-                        [indeterminate]="isRowPartiallySelected(sm)"
-                        (change)="toggleRowSelectAll(sm)" />
-                    </td>
                   </tr>
                 }
               }

@@ -6,11 +6,14 @@ import { UserService } from '../services/user.service';
 import { RoleService } from '../services/role.service';
 import { PermissionService } from '../services/permission.service';
 import { PermissionSubModule, PermissionAction } from '../models/permission.model';
+import { resolveFallbackRoute } from './fallback-route.util';
 
 /**
  * Blocks direct navigation to a route the current user's role doesn't have
- * the given permission for (defaults to 'View'). Dashboard and My Profile
- * are intentionally never gated this way - see nav-config.ts / app.routes.ts.
+ * the given permission for (defaults to 'View'). My Profile is intentionally
+ * never gated this way - see app.routes.ts. On failure, redirects to the
+ * first module the role can actually View (see fallback-route.util.ts)
+ * rather than a fixed route, since Dashboard itself is now gated too.
  *
  * Awaits the users/roles/permissions services' initial load first - on a hard
  * reload or direct URL navigation those signal caches start empty, and
@@ -35,7 +38,7 @@ export function permissionGuard(subModule: PermissionSubModule, action: Permissi
     }
 
     toast.error("You don't have permission to view this page.");
-    router.navigate(['/dashboard']);
+    router.navigate([resolveFallbackRoute(accessControl)]);
     return false;
   };
 }

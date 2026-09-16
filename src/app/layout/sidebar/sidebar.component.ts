@@ -24,15 +24,16 @@ export class SidebarComponent {
   modules = NAV_MODULES;
 
   /**
-   * Dashboard is intentionally never permission-gated. Every other module
-   * shows only the sub-items the current user's role can View, and the
-   * parent module itself only if at least one sub-item survives.
+   * A top-level module with a direct path (currently only Dashboard) shows only
+   * if the role has View on it. Every other module shows only the sub-items the
+   * current user's role can View, and the parent module itself only if at least
+   * one sub-item survives.
    */
   visibleModules = computed<NavModule[]>(() =>
     this.modules
       .map(module => {
         if (module.path) {
-          return module;
+          return this.accessControl.hasPermission(module.label as any, 'View') ? module : null;
         }
         const visibleSubModules = (module.subModules ?? []).filter(sm =>
           this.accessControl.hasPermission(sm.label as any, 'View')

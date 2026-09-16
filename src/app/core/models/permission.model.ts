@@ -36,6 +36,9 @@ export const PERMISSION_SUB_MODULES: PermissionSubModule[] = Object.keys(SUB_MOD
 
 export const PERMISSION_ACTIONS: PermissionAction[] = ['View', 'Create', 'Edit', 'Delete', 'Change Status'];
 
+/** Read-only pages with no Add/Edit/Delete UI at all - only a View permission ever makes sense for these. */
+export const READ_ONLY_SUB_MODULES: PermissionSubModule[] = ['Dashboard', 'Borrower History', 'Document Audit Trail'];
+
 export interface Permission {
   id: string;
   module: PermissionModule;
