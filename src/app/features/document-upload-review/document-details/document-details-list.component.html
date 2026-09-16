@@ -4,7 +4,9 @@
       <h1>Document Details</h1>
       <p class="subtitle">Manage uploaded documents</p>
     </div>
-    <button type="button" class="btn-primary" (click)="addDocument()">+ Add Document</button>
+    @if (canCreate()) {
+      <button type="button" class="btn-primary" (click)="addDocument()">+ Add Document</button>
+    }
   </div>
 
   <div class="grid-toolbar">
@@ -49,15 +51,21 @@
             <td>{{ doc.documentSubType }}</td>
             <td>{{ doc.documentStatus }}</td>
             <td class="action-col">
-              <div class="menu-wrapper">
-                <button type="button" class="dots-btn" (click)="toggleMenu(doc.id)">&#8942;</button>
-                @if (openMenuId() === doc.id) {
-                  <div class="dropdown-menu">
-                    <button type="button" (click)="editDocument(doc)">Edit</button>
-                    <button type="button" class="danger" (click)="deleteDocument(doc)">Delete</button>
-                  </div>
-                }
-              </div>
+              @if (hasRowActions()) {
+                <div class="menu-wrapper">
+                  <button type="button" class="dots-btn" (click)="toggleMenu(doc.id)">&#8942;</button>
+                  @if (openMenuId() === doc.id) {
+                    <div class="dropdown-menu">
+                      @if (canEdit()) {
+                        <button type="button" (click)="editDocument(doc)">Edit</button>
+                      }
+                      @if (canDelete()) {
+                        <button type="button" class="danger" (click)="deleteDocument(doc)">Delete</button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             </td>
           </tr>
         }

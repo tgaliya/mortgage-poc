@@ -33,7 +33,11 @@ export class ManageUsersListComponent {
     )
   );
   openMenuId = signal<string | null>(null);
+  canCreate = computed(() => this.accessControl.hasPermission('Manage Users', 'Create'));
+  canEdit = computed(() => this.accessControl.hasPermission('Manage Users', 'Edit'));
+  canDelete = computed(() => this.accessControl.hasPermission('Manage Users', 'Delete'));
   canChangeStatus = computed(() => this.accessControl.hasPermission('Manage Users', 'Change Status'));
+  hasRowActions = computed(() => this.canEdit() || this.canDelete() || this.canChangeStatus());
 
   roleName(roleId: string): string {
     return this.roleService.getById(roleId)?.roleName ?? '—';
@@ -74,6 +78,11 @@ export class ManageUsersListComponent {
 
   async deleteUser(user: AppUser): Promise<void> {
     this.openMenuId.set(null);
+
+    if (!this.canDelete()) {
+      this.toast.error('You do not have permission to delete this record.');
+      return;
+    }
 
     if (this.isCurrentUser(user.id)) {
       this.toast.error('You cannot delete your own account.');

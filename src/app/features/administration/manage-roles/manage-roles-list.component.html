@@ -4,7 +4,9 @@
       <h1>Manage Roles</h1>
       <p class="subtitle">Named bundles of permissions</p>
     </div>
-    <button type="button" class="btn-primary" (click)="addRole()">+ Add Role</button>
+    @if (canCreate()) {
+      <button type="button" class="btn-primary" (click)="addRole()">+ Add Role</button>
+    }
   </div>
 
   <div class="grid-toolbar">
@@ -51,15 +53,21 @@
             <td>{{ userCount(role.id) }} user{{ userCount(role.id) === 1 ? '' : 's' }}</td>
             <td>{{ role.status }}</td>
             <td class="action-col">
-              <div class="menu-wrapper">
-                <button type="button" class="dots-btn" (click)="toggleMenu(role.id)">&#8942;</button>
-                @if (openMenuId() === role.id) {
-                  <div class="dropdown-menu">
-                    <button type="button" (click)="editRole(role)">Edit</button>
-                    <button type="button" class="danger" (click)="deleteRole(role)">Delete</button>
-                  </div>
-                }
-              </div>
+              @if (hasRowActions()) {
+                <div class="menu-wrapper">
+                  <button type="button" class="dots-btn" (click)="toggleMenu(role.id)">&#8942;</button>
+                  @if (openMenuId() === role.id) {
+                    <div class="dropdown-menu">
+                      @if (canEdit()) {
+                        <button type="button" (click)="editRole(role)">Edit</button>
+                      }
+                      @if (canDelete()) {
+                        <button type="button" class="danger" (click)="deleteRole(role)">Delete</button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             </td>
           </tr>
         }

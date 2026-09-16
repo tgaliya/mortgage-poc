@@ -4,7 +4,9 @@
       <h1>Manage Users</h1>
       <p class="subtitle">Manage who can log in and their assigned role</p>
     </div>
-    <button type="button" class="btn-primary" (click)="addUser()">+ Add User</button>
+    @if (canCreate()) {
+      <button type="button" class="btn-primary" (click)="addUser()">+ Add User</button>
+    }
   </div>
 
   <div class="grid-toolbar">
@@ -51,24 +53,30 @@
             <td>{{ roleName(user.roleId) }}</td>
             <td>{{ user.status }}{{ isCurrentUser(user.id) ? ' (You)' : '' }}</td>
             <td class="action-col">
-              <div class="menu-wrapper">
-                <button type="button" class="dots-btn" (click)="toggleMenu(user.id)">&#8942;</button>
-                @if (openMenuId() === user.id) {
-                  <div class="dropdown-menu">
-                    <button type="button" (click)="editUser(user)">Edit</button>
-                    @if (canChangeStatus()) {
-                      @if (user.status === 'Active') {
-                        @if (!isCurrentUser(user.id)) {
-                          <button type="button" (click)="setStatus(user, 'Inactive')">Set to Inactive</button>
-                        }
-                      } @else {
-                        <button type="button" (click)="setStatus(user, 'Active')">Set to Active</button>
+              @if (hasRowActions()) {
+                <div class="menu-wrapper">
+                  <button type="button" class="dots-btn" (click)="toggleMenu(user.id)">&#8942;</button>
+                  @if (openMenuId() === user.id) {
+                    <div class="dropdown-menu">
+                      @if (canEdit()) {
+                        <button type="button" (click)="editUser(user)">Edit</button>
                       }
-                    }
-                    <button type="button" class="danger" (click)="deleteUser(user)">Delete</button>
-                  </div>
-                }
-              </div>
+                      @if (canChangeStatus()) {
+                        @if (user.status === 'Active') {
+                          @if (!isCurrentUser(user.id)) {
+                            <button type="button" (click)="setStatus(user, 'Inactive')">Set to Inactive</button>
+                          }
+                        } @else {
+                          <button type="button" (click)="setStatus(user, 'Active')">Set to Active</button>
+                        }
+                      }
+                      @if (canDelete()) {
+                        <button type="button" class="danger" (click)="deleteUser(user)">Delete</button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             </td>
           </tr>
         }

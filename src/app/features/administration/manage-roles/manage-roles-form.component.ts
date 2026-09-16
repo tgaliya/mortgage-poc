@@ -15,12 +15,13 @@ import {
 } from '../../../core/models/permission.model';
 import { AutofocusDirective } from '../../../shared/directives/autofocus.directive';
 import { EnterSubmitDirective } from '../../../shared/directives/enter-submit.directive';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { getValidationToastMessages } from '../../../shared/utils/form-validation.util';
 
 @Component({
   selector: 'app-manage-roles-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AutofocusDirective, EnterSubmitDirective],
+  imports: [CommonModule, ReactiveFormsModule, AutofocusDirective, EnterSubmitDirective, IconComponent],
   templateUrl: './manage-roles-form.component.html'
 })
 export class ManageRolesFormComponent implements OnInit {
@@ -77,11 +78,31 @@ export class ManageRolesFormComponent implements OnInit {
     return this.selectedPermissionIds().has(permissionId);
   }
 
+  /** Create/Edit/Delete/Change Status are meaningless without View, so they stay locked until View is checked. */
+  isViewSelected(subModule: PermissionSubModule): boolean {
+    const viewPerm = this.permissionFor(subModule, 'View');
+    return !!viewPerm && this.isSelected(viewPerm.id);
+  }
+
+  /** Whether this row has any lockable action beyond View - rows like Dashboard only ever have View. */
+  hasLockableActions(subModule: PermissionSubModule): boolean {
+    return this.actions.some(a => a !== 'View' && !!this.permissionFor(subModule, a));
+  }
+
   togglePermission(permissionId: string): void {
     this.permissionsTouched.set(true);
     const current = new Set(this.selectedPermissionIds());
+    const perm = this.permissionService.permissions().find(p => p.id === permissionId);
+
     if (current.has(permissionId)) {
       current.delete(permissionId);
+      // Unchecking View also clears any other action already selected for this sub-module,
+      // since Create/Edit/Delete/Change Status can't be meaningfully granted without View.
+      if (perm?.action === 'View') {
+        this.permissionService.permissions()
+          .filter(p => p.subModule === perm.subModule && p.action !== 'View')
+          .forEach(p => current.delete(p.id));
+      }
     } else {
       current.add(permissionId);
     }

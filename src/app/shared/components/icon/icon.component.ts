@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 export type IconName =
   | 'dashboard' | 'users' | 'home' | 'document' | 'profile' | 'bank' | 'history' | 'audit'
-  | 'search' | 'close' | 'upload' | 'shield' | 'badge' | 'key';
+  | 'search' | 'close' | 'upload' | 'shield' | 'badge' | 'key' | 'info';
 
 @Component({
   selector: 'app-icon',

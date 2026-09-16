@@ -59,13 +59,22 @@
                 </tr>
                 @for (sm of subModulesFor(m); track sm) {
                   <tr>
-                    <td class="module-label">{{ sm }}</td>
+                    <td class="module-label">
+                      {{ sm }}
+                      @if (!isViewSelected(sm) && hasLockableActions(sm)) {
+                        <span class="info-tooltip-wrapper">
+                          <app-icon name="info" class="info-icon"></app-icon>
+                          <span class="info-tooltip-text">Select "View" first to enable Create, Edit, Delete, and Change Status for {{ sm }}.</span>
+                        </span>
+                      }
+                    </td>
                     @for (a of actions; track a) {
                       <td>
                         @if (permissionFor(sm, a); as perm) {
                           <input
                             type="checkbox"
                             [checked]="isSelected(perm.id)"
+                            [disabled]="a !== 'View' && !isViewSelected(sm)"
                             (change)="togglePermission(perm.id)" />
                         } @else {
                           <span class="matrix-empty">—</span>
