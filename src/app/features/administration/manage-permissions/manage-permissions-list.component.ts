@@ -5,6 +5,7 @@ import { PermissionService } from '../../../core/services/permission.service';
 import { RoleService } from '../../../core/services/role.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { AccessControlService } from '../../../core/services/access-control.service';
 import { Permission } from '../../../core/models/permission.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { matchesSearch } from '../../../shared/utils/search.util';
@@ -21,6 +22,7 @@ export class ManagePermissionsListComponent {
   private toast = inject(ToastService);
   private confirmDialog = inject(ConfirmDialogService);
   private router = inject(Router);
+  private accessControl = inject(AccessControlService);
 
   searchTerm = signal('');
   filteredPermissions = computed(() =>
@@ -29,6 +31,10 @@ export class ManagePermissionsListComponent {
     )
   );
   openMenuId = signal<string | null>(null);
+  canCreate = computed(() => this.accessControl.hasPermission('Manage Permissions', 'Create'));
+  canEdit = computed(() => this.accessControl.hasPermission('Manage Permissions', 'Edit'));
+  canDelete = computed(() => this.accessControl.hasPermission('Manage Permissions', 'Delete'));
+  hasRowActions = computed(() => this.canEdit() || this.canDelete());
 
   toggleMenu(id: string): void {
     this.openMenuId.set(this.openMenuId() === id ? null : id);
@@ -45,6 +51,11 @@ export class ManagePermissionsListComponent {
 
   async deletePermission(permission: Permission): Promise<void> {
     this.openMenuId.set(null);
+
+    if (!this.canDelete()) {
+      this.toast.error('You do not have permission to delete this record.');
+      return;
+    }
 
     const rolesUsingIt = this.roleService.countRolesUsingPermission(permission.id);
     if (rolesUsingIt > 0) {

@@ -4,7 +4,9 @@
       <h1>Loan Details</h1>
       <p class="subtitle">Manage loan records</p>
     </div>
-    <button type="button" class="btn-primary" (click)="addLoan()">+ Add Loan Details</button>
+    @if (canCreate()) {
+      <button type="button" class="btn-primary" (click)="addLoan()">+ Add Loan Details</button>
+    }
   </div>
 
   <div class="grid-toolbar">
@@ -53,15 +55,21 @@
             <td>{{ loan.investor }}</td>
             <td>{{ loan.loanStatus }}</td>
             <td class="action-col">
-              <div class="menu-wrapper">
-                <button type="button" class="dots-btn" (click)="toggleMenu(loan.id)">&#8942;</button>
-                @if (openMenuId() === loan.id) {
-                  <div class="dropdown-menu">
-                    <button type="button" (click)="editLoan(loan)">Edit</button>
-                    <button type="button" class="danger" (click)="deleteLoan(loan)">Delete</button>
-                  </div>
-                }
-              </div>
+              @if (hasRowActions()) {
+                <div class="menu-wrapper">
+                  <button type="button" class="dots-btn" (click)="toggleMenu(loan.id)">&#8942;</button>
+                  @if (openMenuId() === loan.id) {
+                    <div class="dropdown-menu">
+                      @if (canEdit()) {
+                        <button type="button" (click)="editLoan(loan)">Edit</button>
+                      }
+                      @if (canDelete()) {
+                        <button type="button" class="danger" (click)="deleteLoan(loan)">Delete</button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             </td>
           </tr>
         }

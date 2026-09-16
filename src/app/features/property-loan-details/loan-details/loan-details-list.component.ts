@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { LoanService } from '../../../core/services/loan.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { AccessControlService } from '../../../core/services/access-control.service';
 import { Loan } from '../../../core/models/loan.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { matchesSearch } from '../../../shared/utils/search.util';
@@ -19,6 +20,7 @@ export class LoanDetailsListComponent {
   private toast = inject(ToastService);
   private confirmDialog = inject(ConfirmDialogService);
   private router = inject(Router);
+  private accessControl = inject(AccessControlService);
 
   searchTerm = signal('');
   filteredLoans = computed(() =>
@@ -27,6 +29,10 @@ export class LoanDetailsListComponent {
     )
   );
   openMenuId = signal<string | null>(null);
+  canCreate = computed(() => this.accessControl.hasPermission('Loan Details', 'Create'));
+  canEdit = computed(() => this.accessControl.hasPermission('Loan Details', 'Edit'));
+  canDelete = computed(() => this.accessControl.hasPermission('Loan Details', 'Delete'));
+  hasRowActions = computed(() => this.canEdit() || this.canDelete());
 
   toggleMenu(id: string): void {
     this.openMenuId.set(this.openMenuId() === id ? null : id);
@@ -43,6 +49,10 @@ export class LoanDetailsListComponent {
 
   async deleteLoan(loan: Loan): Promise<void> {
     this.openMenuId.set(null);
+    if (!this.canDelete()) {
+      this.toast.error('You do not have permission to delete this record.');
+      return;
+    }
     const confirmed = await this.confirmDialog.confirm(
       'Are you sure you want to proceed with deletion? You cannot rollback this operation.'
     );

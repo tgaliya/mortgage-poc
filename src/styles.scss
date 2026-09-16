@@ -524,10 +524,57 @@ h1, h2, h3, h4 {
     width: 16px;
     height: 16px;
     cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
   }
 
   tbody tr:last-child td {
     border-bottom: none;
+  }
+}
+
+.info-tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 5px;
+  cursor: help;
+
+  .info-icon {
+    width: 14px;
+    height: 14px;
+    color: #94a3b8;
+  }
+
+  .info-tooltip-text {
+    position: absolute;
+    bottom: 130%;
+    left: 0;
+    background: #1a2b4a;
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    line-height: 1.4;
+    padding: 7px 10px;
+    border-radius: 6px;
+    width: 220px;
+    white-space: normal;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  &:hover .info-tooltip-text,
+  &:focus-within .info-tooltip-text {
+    opacity: 1;
+    visibility: visible;
   }
 }
 

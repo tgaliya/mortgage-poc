@@ -4,7 +4,9 @@
       <h1>Manage Permissions</h1>
       <p class="subtitle">Catalog of module + action permissions used by roles</p>
     </div>
-    <button type="button" class="btn-primary" (click)="addPermission()">+ Add Permission</button>
+    @if (canCreate()) {
+      <button type="button" class="btn-primary" (click)="addPermission()">+ Add Permission</button>
+    }
   </div>
 
   <div class="grid-toolbar">
@@ -51,15 +53,21 @@
             <td>{{ permission.name }}</td>
             <td>{{ permission.description || '—' }}</td>
             <td class="action-col">
-              <div class="menu-wrapper">
-                <button type="button" class="dots-btn" (click)="toggleMenu(permission.id)">&#8942;</button>
-                @if (openMenuId() === permission.id) {
-                  <div class="dropdown-menu">
-                    <button type="button" (click)="editPermission(permission)">Edit</button>
-                    <button type="button" class="danger" (click)="deletePermission(permission)">Delete</button>
-                  </div>
-                }
-              </div>
+              @if (hasRowActions()) {
+                <div class="menu-wrapper">
+                  <button type="button" class="dots-btn" (click)="toggleMenu(permission.id)">&#8942;</button>
+                  @if (openMenuId() === permission.id) {
+                    <div class="dropdown-menu">
+                      @if (canEdit()) {
+                        <button type="button" (click)="editPermission(permission)">Edit</button>
+                      }
+                      @if (canDelete()) {
+                        <button type="button" class="danger" (click)="deletePermission(permission)">Delete</button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             </td>
           </tr>
         }

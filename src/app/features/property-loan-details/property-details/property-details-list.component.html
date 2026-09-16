@@ -4,7 +4,9 @@
       <h1>Property Details</h1>
       <p class="subtitle">Manage property records</p>
     </div>
-    <button type="button" class="btn-primary" (click)="addProperty()">+ Add Property Details</button>
+    @if (canCreate()) {
+      <button type="button" class="btn-primary" (click)="addProperty()">+ Add Property Details</button>
+    }
   </div>
 
   <div class="grid-toolbar">
@@ -55,15 +57,21 @@
             <td>{{ property.zipCode }}</td>
             <td>{{ property.propertyStatus }}</td>
             <td class="action-col">
-              <div class="menu-wrapper">
-                <button type="button" class="dots-btn" (click)="toggleMenu(property.id)">&#8942;</button>
-                @if (openMenuId() === property.id) {
-                  <div class="dropdown-menu">
-                    <button type="button" (click)="editProperty(property)">Edit</button>
-                    <button type="button" class="danger" (click)="deleteProperty(property)">Delete</button>
-                  </div>
-                }
-              </div>
+              @if (hasRowActions()) {
+                <div class="menu-wrapper">
+                  <button type="button" class="dots-btn" (click)="toggleMenu(property.id)">&#8942;</button>
+                  @if (openMenuId() === property.id) {
+                    <div class="dropdown-menu">
+                      @if (canEdit()) {
+                        <button type="button" (click)="editProperty(property)">Edit</button>
+                      }
+                      @if (canDelete()) {
+                        <button type="button" class="danger" (click)="deleteProperty(property)">Delete</button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             </td>
           </tr>
         }
